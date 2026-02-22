@@ -511,7 +511,6 @@ export function EditStudentPage({ studentId }: EditStudentPageProps) {
 
                 <div className="space-y-2">
                   <Label htmlFor="gender">Gender *</Label>
-                  <input type="hidden" {...register('gender')} />
                   <Select 
                     value={watch('gender')} 
                     onValueChange={(v) => setValue('gender', v as 'Male' | 'Female' | 'Other', { shouldValidate: true, shouldDirty: true, shouldTouch: true })}
@@ -573,9 +572,8 @@ export function EditStudentPage({ studentId }: EditStudentPageProps) {
 
                 <div className="space-y-2">
                   <Label htmlFor="program">Program *</Label>
-                  <input type="hidden" {...register('program')} />
                   <Select 
-                    value={watch('program') || undefined} 
+                    value={watch('program')} 
                     onValueChange={(v) => setValue('program', v as 'BCA' | 'BICTE', { shouldValidate: true, shouldDirty: true, shouldTouch: true })}
                   >
                     <SelectTrigger>
@@ -593,13 +591,8 @@ export function EditStudentPage({ studentId }: EditStudentPageProps) {
 
                 <div className="space-y-2">
                   <Label htmlFor="current_semester">Current Semester *</Label>
-                  <input type="hidden" {...register('current_semester')} />
                   <Select 
-                    value={
-                      typeof watch('current_semester') === 'number'
-                        ? String(watch('current_semester'))
-                        : undefined
-                    }
+                    value={String(watch('current_semester'))}
                     onValueChange={(v) => setValue('current_semester', parseInt(v, 10), { shouldValidate: true, shouldDirty: true, shouldTouch: true })}
                   >
                     <SelectTrigger>
