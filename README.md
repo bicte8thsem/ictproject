@@ -32,7 +32,27 @@ npm install
 npm run dev
 ```
 
-## 4. Login troubleshooting
+## 4. Deploy to Vercel
+
+This project is configured for Vite static deployment.
+
+Required Vercel settings:
+- Framework Preset: `Vite`
+- Install Command: `npm ci`
+- Build Command: `npm run build`
+- Output Directory: `dist`
+- Root Directory: project root (where `package.json` is)
+
+If deployment still fails:
+1. Remove local link metadata and relink:
+```bash
+rm -rf .vercel
+vercel
+```
+2. Confirm there is no `now.json` file.
+3. Redeploy from Vercel dashboard.
+
+## 5. Login troubleshooting
 
 If login fails:
 
