@@ -131,8 +131,6 @@ export function EditStudentPage({ studentId }: EditStudentPageProps) {
       name: '',
       gender: 'Male',
       birthdate: '',
-      program: 'BCA',
-      current_semester: 1,
       faculty: 'Computer Science',
       level: 'Bachelor',
       local_address: '',
@@ -159,18 +157,18 @@ export function EditStudentPage({ studentId }: EditStudentPageProps) {
     return isValid ? normalized : '';
   };
 
-  const normalizeSemester = (value: unknown): number => {
-    const parsed = Number(value);
-    if (!Number.isFinite(parsed)) return 1;
-    const rounded = Math.trunc(parsed);
-    if (rounded < 1) return 1;
-    if (rounded > 8) return 8;
-    return rounded;
+  const parseProgram = (value: unknown): 'BCA' | 'BICTE' | undefined => {
+    const normalized = String(value ?? '').trim().toUpperCase();
+    if (normalized === 'BCA' || normalized === 'BICTE') return normalized;
+    return undefined;
   };
 
-  const normalizeProgram = (value: unknown): 'BCA' | 'BICTE' => {
-    const normalized = String(value ?? '').trim().toUpperCase();
-    return normalized === 'BICTE' ? 'BICTE' : 'BCA';
+  const parseSemester = (value: unknown): number | undefined => {
+    const parsed = Number(value);
+    if (!Number.isFinite(parsed)) return undefined;
+    const rounded = Math.trunc(parsed);
+    if (rounded < 1 || rounded > 8) return undefined;
+    return rounded;
   };
 
   // Populate form with existing data
@@ -190,8 +188,8 @@ export function EditStudentPage({ studentId }: EditStudentPageProps) {
         mobile_no: student.mobile_no || '',
         email_id: sanitizeEmail(student.email_id),
         residential_no: student.residential_no || '',
-        program: normalizeProgram(student.program),
-        current_semester: normalizeSemester(student.current_semester),
+        program: parseProgram(student.program),
+        current_semester: parseSemester(student.current_semester),
         local_address: address?.local_address || '',
         district: address?.district || '',
         state: address?.state || '',
@@ -275,10 +273,25 @@ export function EditStudentPage({ studentId }: EditStudentPageProps) {
       const sourceData = (rawData && typeof rawData === 'object')
         ? (rawData as Record<string, unknown>)
         : {};
+      const programValue = parseProgram(sourceData.program);
+      const semesterValue = parseSemester(sourceData.current_semester);
+
+      if (!programValue) {
+        setError('program', { type: 'manual', message: 'Please select a valid program.' });
+        toast.error('Please select a valid program.');
+        return;
+      }
+
+      if (!semesterValue) {
+        setError('current_semester', { type: 'manual', message: 'Please select a valid semester.' });
+        toast.error('Please select a valid semester.');
+        return;
+      }
+
       const normalizedInput: Record<string, unknown> = {
         ...sourceData,
-        program: normalizeProgram(sourceData.program),
-        current_semester: normalizeSemester(sourceData.current_semester),
+        program: programValue,
+        current_semester: semesterValue,
       };
 
       const parsed = studentFormSchema.safeParse(normalizedInput);
@@ -616,7 +629,7 @@ export function EditStudentPage({ studentId }: EditStudentPageProps) {
                     name="program"
                     control={control}
                     render={({ field }) => (
-                      <Select value={normalizeProgram(field.value)} onValueChange={field.onChange}>
+                      <Select value={parseProgram(field.value)} onValueChange={field.onChange}>
                         <SelectTrigger>
                           <SelectValue />
                         </SelectTrigger>
@@ -639,7 +652,7 @@ export function EditStudentPage({ studentId }: EditStudentPageProps) {
                     control={control}
                     render={({ field }) => (
                       <Select
-                        value={String(normalizeSemester(field.value))}
+                        value={field.value ? String(field.value) : undefined}
                         onValueChange={(v) => field.onChange(parseInt(v, 10))}
                       >
                         <SelectTrigger>
