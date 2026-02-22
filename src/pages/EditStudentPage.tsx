@@ -163,6 +163,14 @@ export function EditStudentPage({ studentId }: EditStudentPageProps) {
     return undefined;
   };
 
+  const parseGender = (value: unknown): 'Male' | 'Female' | 'Other' | undefined => {
+    const normalized = String(value ?? '').trim().toLowerCase();
+    if (normalized === 'male') return 'Male';
+    if (normalized === 'female') return 'Female';
+    if (normalized === 'other') return 'Other';
+    return undefined;
+  };
+
   const parseSemester = (value: unknown): number | undefined => {
     const parsed = Number(value);
     if (!Number.isFinite(parsed)) return undefined;
@@ -178,7 +186,7 @@ export function EditStudentPage({ studentId }: EditStudentPageProps) {
       reset({
         college_enrollment_no: student.college_enrollment_no,
         name: student.name,
-        gender: student.gender,
+        gender: parseGender(student.gender),
         religion: student.religion || '',
         birthdate: formatDateForInput(student.birthdate),
         faculty: student.faculty || 'Computer Science',
@@ -273,8 +281,16 @@ export function EditStudentPage({ studentId }: EditStudentPageProps) {
       const sourceData = (rawData && typeof rawData === 'object')
         ? (rawData as Record<string, unknown>)
         : {};
-      const programValue = parseProgram(sourceData.program);
-      const semesterValue = parseSemester(sourceData.current_semester);
+      const profileStudent = isProfileData(profile) ? profile.student : undefined;
+      const programValue = parseProgram(sourceData.program) ?? parseProgram(profileStudent?.program);
+      const semesterValue = parseSemester(sourceData.current_semester) ?? parseSemester(profileStudent?.current_semester);
+      const genderValue = parseGender(sourceData.gender) ?? parseGender(profileStudent?.gender);
+
+      if (!genderValue) {
+        setError('gender', { type: 'manual', message: 'Please select a valid gender.' });
+        toast.error('Please select a valid gender.');
+        return;
+      }
 
       if (!programValue) {
         setError('program', { type: 'manual', message: 'Please select a valid program.' });
@@ -290,6 +306,7 @@ export function EditStudentPage({ studentId }: EditStudentPageProps) {
 
       const normalizedInput: Record<string, unknown> = {
         ...sourceData,
+        gender: genderValue,
         program: programValue,
         current_semester: semesterValue,
       };
@@ -565,7 +582,7 @@ export function EditStudentPage({ studentId }: EditStudentPageProps) {
                     name="gender"
                     control={control}
                     render={({ field }) => (
-                      <Select value={field.value} onValueChange={field.onChange}>
+                      <Select value={parseGender(field.value)} onValueChange={field.onChange}>
                         <SelectTrigger>
                           <SelectValue />
                         </SelectTrigger>
