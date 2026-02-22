@@ -11,12 +11,6 @@ const hasPlaceholderValues =
   supabaseAnonKey.includes('your-anon-key-here');
 const isSupabaseConfigured = Boolean(supabaseUrl && supabaseAnonKey && !hasPlaceholderValues);
 
-if (!isSupabaseConfigured) {
-  console.warn(
-    'Supabase credentials are missing or placeholders are still in use. Update .env and restart the app.'
-  );
-}
-
 export const supabase = createClient(
   isSupabaseConfigured ? supabaseUrl : 'http://localhost:54321',
   isSupabaseConfigured ? supabaseAnonKey : 'mock-key'

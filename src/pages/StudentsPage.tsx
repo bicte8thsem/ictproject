@@ -94,8 +94,7 @@ const STATUS_OPTIONS = [
 
 const STUDENTS_PER_PAGE = 10;
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function isStudentWithDetails(student: any): student is {
+function isStudentWithDetails(student: unknown): student is {
   id: string;
   name: string;
   college_enrollment_no: string;
@@ -106,7 +105,7 @@ function isStudentWithDetails(student: any): student is {
   email_id?: string;
   photo_url?: string;
 } {
-  return student && typeof student === 'object' && 'id' in student && 'name' in student;
+  return !!student && typeof student === 'object' && 'id' in student && 'name' in student;
 }
 
 function StudentRow({ 

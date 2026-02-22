@@ -13,13 +13,14 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Lock, Mail, Loader2 } from 'lucide-react';
+import { Lock, Mail, Loader2, Eye, EyeOff } from 'lucide-react';
 import logo from '../../logo.svg';
 
 export function LoginPage() {
   const { login } = useAuth();
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   const {
     register,
@@ -51,12 +52,13 @@ export function LoginPage() {
     <div className="min-h-screen bg-background flex items-center justify-center p-4">
       <div className="w-full max-w-md">
         <div className="flex justify-center mb-6">
-          <img src={logo} alt="Logo" className="h-20 w-auto" />
+          <img src={logo} alt="Logo" className="h-24 w-auto" />
         </div>
 
         <Card className="border-0 shadow-xl shadow-primary/10 bg-white">
           <CardHeader className="pb-4">
-            <CardTitle className="text-xl text-foreground">Login</CardTitle>
+            <CardTitle className="text-xl text-foreground text-center">Login</CardTitle>
+            <p className="text-sm text-muted-foreground text-center">Enter Details For Login</p>
           </CardHeader>
           
           <CardContent>
@@ -94,11 +96,19 @@ export function LoginPage() {
                   <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground/70" />
                   <Input
                     id="password"
-                    type="password"
+                    type={showPassword ? 'text' : 'password'}
                     placeholder="Enter your password"
-                    className="pl-10 h-11 border-border focus:border-primary focus:ring-primary"
+                    className="pl-10 pr-10 h-11 border-border focus:border-primary focus:ring-primary"
                     {...register('password')}
                   />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword((prev) => !prev)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground/70 hover:text-foreground"
+                    aria-label={showPassword ? 'Hide password' : 'Show password'}
+                  >
+                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  </button>
                 </div>
                 {errors.password && (
                   <p className="text-sm text-red-500">{errors.password.message}</p>

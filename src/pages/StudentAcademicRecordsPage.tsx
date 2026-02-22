@@ -21,8 +21,7 @@ interface StudentAcademicRecordsPageProps {
   studentId: string;
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function isProfileData(data: any): data is {
+function isProfileData(data: unknown): data is {
   student: {
     id: string;
     name: string;
@@ -30,7 +29,7 @@ function isProfileData(data: any): data is {
     current_semester: number;
   };
 } {
-  return data && typeof data === 'object' && 'student' in data;
+  return !!data && typeof data === 'object' && 'student' in data;
 }
 
 export function StudentAcademicRecordsPage({ studentId }: StudentAcademicRecordsPageProps) {

@@ -123,9 +123,9 @@ export function AddStudentPage() {
     return Number.isNaN(parsed) ? undefined : parsed;
   };
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const onSubmit = async (data: any) => {
+  const onSubmit = async (rawData: unknown) => {
     try {
+      const data = studentFormSchema.parse(rawData);
       let photoUrl = '';
       if (photoFile) {
         try {

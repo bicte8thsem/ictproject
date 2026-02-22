@@ -49,8 +49,7 @@ interface StudentProfilePageProps {
   studentId: string;
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function isProfileData(data: any): data is {
+function isProfileData(data: unknown): data is {
   student: {
     id: string;
     name: string;
@@ -100,7 +99,7 @@ function isProfileData(data: any): data is {
     major_subject?: string;
   };
 } {
-  return data && typeof data === 'object' && 'student' in data;
+  return !!data && typeof data === 'object' && 'student' in data;
 }
 
 function isSemesterRecordsData(data: unknown): data is {
@@ -327,14 +326,14 @@ export function StudentProfilePage({ studentId }: StudentProfilePageProps) {
       {/* Header */}
       <header className={`bg-white border-b border-border sticky top-0 z-30 transition-transform duration-300 ${isHeaderVisible ? 'translate-y-0' : '-translate-y-full'}`}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 py-3 sm:py-0 sm:h-16">
+          <div className="flex flex-col 2xl:flex-row 2xl:items-center 2xl:justify-between gap-3 py-3">
             <div className="flex items-center gap-2 sm:gap-3 min-w-0">
               <Button 
                 variant="ghost" 
                 size="sm" 
                 onClick={() => navigateTo({ page: 'students' })}
               >
-                <ChevronLeft className="w-4 h-4 mr-1" />
+                <ChevronLeft className="w-4 h-4" />
                 Back
               </Button>
               <img src={logo} alt="Janamaitri Logo" className="h-10 w-auto" />
@@ -344,57 +343,60 @@ export function StudentProfilePage({ studentId }: StudentProfilePageProps) {
               </div>
             </div>
             
-            <div className="flex items-center gap-2 sm:gap-3 w-full sm:w-auto justify-end flex-wrap">
+            <div className="flex items-center gap-2 w-full 2xl:w-auto justify-start 2xl:justify-end flex-nowrap overflow-x-auto [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
               <Button
                 variant="outline"
                 size="sm"
                 onClick={() => navigateTo({ page: 'dashboard' })}
+                className="shrink-0 w-9 px-0 xl:w-auto xl:px-3"
               >
-                <Home className="w-4 h-4 sm:mr-2" />
-                <span className="hidden sm:inline">Home</span>
+                <Home className="w-4 h-4" />
+                <span className="hidden xl:inline">Home</span>
               </Button>
               <Button
                 variant="outline"
                 size="sm"
                 onClick={goToAcademicRecords}
+                className="shrink-0 w-9 px-0 xl:w-auto xl:px-3"
               >
-                <BookOpen className="w-4 h-4 sm:mr-2" />
-                <span className="hidden sm:inline">Academic Records</span>
+                <BookOpen className="w-4 h-4" />
+                <span className="hidden 2xl:inline">Academic Records</span>
               </Button>
               <Button
                 size="sm"
                 onClick={() => navigateTo({ page: 'add-student' })}
-                className="bg-primary hover:bg-primary/90"
+                className="shrink-0 w-9 px-0 bg-primary hover:bg-primary/90 xl:w-auto xl:px-3"
               >
-                <Plus className="w-4 h-4 sm:mr-2" />
-                <span className="hidden sm:inline">Add Student</span>
+                <Plus className="w-4 h-4" />
+                <span className="hidden xl:inline">Add Student</span>
               </Button>
               <Button
                 variant="outline"
                 size="sm"
                 onClick={() => navigateTo({ page: 'edit-student', studentId: effectiveStudentId, studentName: student.name })}
+                className="shrink-0 w-9 px-0 xl:w-auto xl:px-3"
               >
-                <Edit className="w-4 h-4 sm:mr-2" />
-                <span className="hidden sm:inline">Edit</span>
+                <Edit className="w-4 h-4" />
+                <span className="hidden xl:inline">Edit</span>
               </Button>
               {student.current_semester < 8 && student.status === 'Active' && (
                 <Button
                   size="sm"
                   onClick={() => setShowPromoteDialog(true)}
-                  className="bg-secondary hover:bg-secondary/90"
+                  className="shrink-0 w-9 px-0 bg-secondary hover:bg-secondary/90 xl:w-auto xl:px-3"
                 >
-                  <TrendingUp className="w-4 h-4 sm:mr-2" />
-                  <span className="hidden sm:inline">Promote</span>
+                  <TrendingUp className="w-4 h-4" />
+                  <span className="hidden xl:inline">Promote</span>
                 </Button>
               )}
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={handleLogout}
-                className="text-muted-foreground hover:text-red-600"
+                className="shrink-0 w-9 px-0 text-muted-foreground hover:text-red-600 xl:w-auto xl:px-3"
               >
-                <LogOut className="w-4 h-4 sm:mr-2" />
-                <span className="hidden sm:inline">Logout</span>
+                <LogOut className="w-4 h-4" />
+                <span className="hidden xl:inline">Logout</span>
               </Button>
             </div>
           </div>

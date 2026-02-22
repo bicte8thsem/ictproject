@@ -44,8 +44,7 @@ interface EditStudentPageProps {
   studentId: string;
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function isProfileData(data: any): data is {
+function isProfileData(data: unknown): data is {
   student: {
     id: string;
     college_enrollment_no: string;
@@ -94,7 +93,7 @@ function isProfileData(data: any): data is {
     major_subject?: string;
   };
 } {
-  return data && typeof data === 'object' && 'student' in data;
+  return !!data && typeof data === 'object' && 'student' in data;
 }
 
 export function EditStudentPage({ studentId }: EditStudentPageProps) {
@@ -141,6 +140,15 @@ export function EditStudentPage({ studentId }: EditStudentPageProps) {
     },
   });
 
+  const formatDateForInput = (value?: string | null) => {
+    if (!value) return '';
+    const normalized = String(value).trim();
+    if (/^\d{4}-\d{2}-\d{2}$/.test(normalized)) return normalized;
+    const parsed = new Date(normalized);
+    if (Number.isNaN(parsed.getTime())) return '';
+    return parsed.toISOString().split('T')[0];
+  };
+
   // Populate form with existing data
   useEffect(() => {
     if (profile && isProfileData(profile)) {
@@ -150,7 +158,7 @@ export function EditStudentPage({ studentId }: EditStudentPageProps) {
         name: student.name,
         gender: student.gender,
         religion: student.religion || '',
-        birthdate: student.birthdate,
+        birthdate: formatDateForInput(student.birthdate),
         faculty: student.faculty || 'Computer Science',
         tu_regd_no: student.tu_regd_no || '',
         level: student.level || 'Bachelor',
@@ -187,6 +195,10 @@ export function EditStudentPage({ studentId }: EditStudentPageProps) {
       setPhotoPreview(student.photo_url || '');
     }
   }, [profile, reset]);
+
+  const onInvalidSubmit = () => {
+    toast.error('Please fix the highlighted fields and try again.');
+  };
 
   useEffect(() => {
     return () => {
@@ -238,9 +250,9 @@ export function EditStudentPage({ studentId }: EditStudentPageProps) {
     return Number.isNaN(parsed) ? undefined : parsed;
   };
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const onSubmit = async (data: any) => {
+  const onSubmit = async (rawData: unknown) => {
     try {
+      const data = studentFormSchema.parse(rawData);
       if (!effectiveStudentId) {
         toast.error('Student ID is missing. Please reload and try again.');
         return;
@@ -431,7 +443,7 @@ export function EditStudentPage({ studentId }: EditStudentPageProps) {
 
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+        <form onSubmit={handleSubmit(onSubmit, onInvalidSubmit)} className="space-y-6">
           {/* Personal Details */}
           <Card className="border-0 shadow-md">
             <CardHeader>
@@ -470,7 +482,7 @@ export function EditStudentPage({ studentId }: EditStudentPageProps) {
                   <Label htmlFor="gender">Gender *</Label>
                   <Select 
                     value={watch('gender')} 
-                    onValueChange={(v) => setValue('gender', v as 'Male' | 'Female' | 'Other')}
+                    onValueChange={(v) => setValue('gender', v as 'Male' | 'Female' | 'Other', { shouldValidate: true, shouldDirty: true })}
                   >
                     <SelectTrigger>
                       <SelectValue />
@@ -528,7 +540,7 @@ export function EditStudentPage({ studentId }: EditStudentPageProps) {
                   <Label htmlFor="program">Program *</Label>
                   <Select 
                     value={watch('program')} 
-                    onValueChange={(v) => setValue('program', v as 'BCA' | 'BICTE')}
+                    onValueChange={(v) => setValue('program', v as 'BCA' | 'BICTE', { shouldValidate: true, shouldDirty: true })}
                   >
                     <SelectTrigger>
                       <SelectValue />
@@ -544,7 +556,7 @@ export function EditStudentPage({ studentId }: EditStudentPageProps) {
                   <Label htmlFor="current_semester">Current Semester *</Label>
                   <Select 
                     value={String(watch('current_semester'))} 
-                    onValueChange={(v) => setValue('current_semester', parseInt(v))}
+                    onValueChange={(v) => setValue('current_semester', parseInt(v, 10), { shouldValidate: true, shouldDirty: true })}
                   >
                     <SelectTrigger>
                       <SelectValue />

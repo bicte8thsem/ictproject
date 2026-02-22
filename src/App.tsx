@@ -7,7 +7,7 @@ import { AuthProvider, useAuth } from '@/contexts/AuthContext';
 import { Toaster } from '@/components/ui/sonner';
 import { Loader2 } from 'lucide-react';
 import { navigateTo, useRoute } from '@/lib/router';
-import { lazy, Suspense } from 'react';
+import { Component, lazy, Suspense, type ReactNode } from 'react';
 
 const LoginPage = lazy(() => import('@/pages/LoginPage').then((m) => ({ default: m.LoginPage })));
 const DashboardPage = lazy(() => import('@/pages/DashboardPage').then((m) => ({ default: m.DashboardPage })));
@@ -18,6 +18,69 @@ const StudentAcademicRecordsPage = lazy(() =>
 );
 const AddStudentPage = lazy(() => import('@/pages/AddStudentPage').then((m) => ({ default: m.AddStudentPage })));
 const EditStudentPage = lazy(() => import('@/pages/EditStudentPage').then((m) => ({ default: m.EditStudentPage })));
+
+interface AppErrorBoundaryProps {
+  children: ReactNode;
+}
+
+interface AppErrorBoundaryState {
+  hasError: boolean;
+}
+
+class AppErrorBoundary extends Component<AppErrorBoundaryProps, AppErrorBoundaryState> {
+  state: AppErrorBoundaryState = { hasError: false };
+
+  static getDerivedStateFromError(): AppErrorBoundaryState {
+    return { hasError: true };
+  }
+
+  componentDidCatch() {
+    // Intentionally silent in UI runtime. Hook monitoring SDK here in production.
+  }
+
+  private handleReload = () => {
+    this.setState({ hasError: false });
+    window.location.reload();
+  };
+
+  private handleGoHome = () => {
+    this.setState({ hasError: false });
+    navigateTo({ page: 'dashboard' });
+  };
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="min-h-screen flex items-center justify-center bg-background px-4">
+          <div className="max-w-md text-center space-y-4">
+            <h1 className="text-xl font-semibold text-foreground">Something went wrong</h1>
+            <p className="text-sm text-muted-foreground">
+              The page crashed while loading. Please reload or go back to dashboard.
+            </p>
+            <div className="flex items-center justify-center gap-2">
+              <button
+                type="button"
+                className="inline-flex h-9 items-center justify-center rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground hover:bg-primary/90"
+                onClick={this.handleReload}
+              >
+                Reload
+              </button>
+              <button
+                type="button"
+                className="inline-flex h-9 items-center justify-center rounded-md border px-4 text-sm font-medium hover:bg-accent"
+                onClick={this.handleGoHome}
+              >
+                Dashboard
+              </button>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    return this.props.children;
+  }
+}
 
 // ============================================
 // ROUTER COMPONENT
@@ -92,8 +155,10 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
-        <Router />
-        <Toaster position="top-right" richColors />
+        <AppErrorBoundary>
+          <Router />
+          <Toaster position="top-right" richColors />
+        </AppErrorBoundary>
       </AuthProvider>
     </QueryClientProvider>
   );
