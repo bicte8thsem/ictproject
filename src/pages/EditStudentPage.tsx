@@ -109,7 +109,7 @@ export function EditStudentPage({ studentId }: EditStudentPageProps) {
     isLoading: isProfileLoading,
     isError: isProfileError,
   } = useStudentProfile(effectiveStudentId);
-  const updateStudent = useUpdateStudent(effectiveStudentId);
+  const updateStudent = useUpdateStudent();
   const isLoading = isProfileLoading || (!isDirectUuid && isResolvingStudentId);
   const isHeaderVisible = useAutoHideHeader();
   const [photoFile, setPhotoFile] = useState<File | null>(null);
@@ -241,6 +241,11 @@ export function EditStudentPage({ studentId }: EditStudentPageProps) {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const onSubmit = async (data: any) => {
     try {
+      if (!effectiveStudentId) {
+        toast.error('Student ID is missing. Please reload and try again.');
+        return;
+      }
+
       let photoUrl = isProfileData(profile) ? profile.student.photo_url || '' : '';
       if (photoFile) {
         try {
@@ -276,35 +281,38 @@ export function EditStudentPage({ studentId }: EditStudentPageProps) {
       }
 
       await updateStudent.mutateAsync({
-        student: studentData,
-        address: {
-          local_address: data.local_address,
-          district: data.district,
-          state: data.state,
-          permanent_address: data.permanent_address,
-        },
-        parents: {
-          father_name: data.father_name,
-          father_occupation: data.father_occupation,
-          father_mobile_no: data.father_mobile_no,
-          mother_name: data.mother_name,
-          mother_occupation: data.mother_occupation,
-          mother_mobile_no: data.mother_mobile_no,
-          guardian_name: data.guardian_name,
-          guardian_occupation: data.guardian_occupation,
-          guardian_mobile_no: data.guardian_mobile_no,
-          guardian_relation: data.guardian_relation,
-        },
-        academicHistory: {
-          slc_institution: data.slc_institution,
-          slc_passed_year: data.slc_passed_year,
-          slc_symbol_no: data.slc_symbol_no,
-          slc_gpa: data.slc_gpa,
-          hs_institution: data.hs_institution,
-          hs_passed_year: data.hs_passed_year,
-          hs_symbol_no: data.hs_symbol_no,
-          hs_gpa: data.hs_gpa,
-          major_subject: data.major_subject,
+        id: effectiveStudentId,
+        data: {
+          student: studentData,
+          address: {
+            local_address: data.local_address,
+            district: data.district,
+            state: data.state,
+            permanent_address: data.permanent_address,
+          },
+          parents: {
+            father_name: data.father_name,
+            father_occupation: data.father_occupation,
+            father_mobile_no: data.father_mobile_no,
+            mother_name: data.mother_name,
+            mother_occupation: data.mother_occupation,
+            mother_mobile_no: data.mother_mobile_no,
+            guardian_name: data.guardian_name,
+            guardian_occupation: data.guardian_occupation,
+            guardian_mobile_no: data.guardian_mobile_no,
+            guardian_relation: data.guardian_relation,
+          },
+          academicHistory: {
+            slc_institution: data.slc_institution,
+            slc_passed_year: data.slc_passed_year,
+            slc_symbol_no: data.slc_symbol_no,
+            slc_gpa: data.slc_gpa,
+            hs_institution: data.hs_institution,
+            hs_passed_year: data.hs_passed_year,
+            hs_symbol_no: data.hs_symbol_no,
+            hs_gpa: data.hs_gpa,
+            major_subject: data.major_subject,
+          },
         },
       });
 

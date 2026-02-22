@@ -314,7 +314,7 @@ export function StudentsPage() {
                 onClick={() => navigateTo({ page: 'dashboard' })}
                 className="mr-1 sm:mr-2"
               >
-                <ChevronLeft className="w-4 h-4 mr-1" />
+                <ChevronLeft className="w-4 h-4" />
                 Back
               </Button>
               <img src={logo} alt="Janamaitri Logo" className="h-10 w-auto" />
@@ -329,24 +329,26 @@ export function StudentsPage() {
                 variant="outline"
                 size="sm"
                 onClick={() => navigateTo({ page: 'dashboard' })}
+                className="w-9 px-0 sm:w-auto sm:px-3"
               >
-                <Home className="w-4 h-4 sm:mr-2" />
+                <Home className="w-4 h-4" />
                 <span className="hidden sm:inline">Home</span>
               </Button>
               <Button
                 onClick={() => navigateTo({ page: 'add-student' })}
-                className="bg-primary hover:bg-primary/90"
+                size="sm"
+                className="w-9 px-0 bg-primary hover:bg-primary/90 sm:w-auto sm:px-3"
               >
-                <Plus className="w-4 h-4 sm:mr-2" />
+                <Plus className="w-4 h-4" />
                 <span className="hidden sm:inline">Add Student</span>
               </Button>
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={handleLogout}
-                className="text-muted-foreground hover:text-red-600"
+                className="w-9 px-0 text-muted-foreground hover:text-red-600 sm:w-auto sm:px-3"
               >
-                <LogOut className="w-4 h-4 sm:mr-2" />
+                <LogOut className="w-4 h-4" />
                 <span className="hidden sm:inline">Logout</span>
               </Button>
             </div>

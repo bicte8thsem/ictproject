@@ -96,15 +96,24 @@ export function useCreateStudent() {
   });
 }
 
-export function useUpdateStudent(id: string) {
+export function useUpdateStudent(defaultId?: string) {
   const queryClient = useQueryClient();
   
   return useMutation({
-    mutationFn: (data: api.CompleteStudentData) => api.saveCompleteStudent(data, id),
-    onSuccess: () => {
+    mutationFn: ({ id, data }: { id?: string; data: api.CompleteStudentData }) => {
+      const targetId = id ?? defaultId;
+      if (!targetId) {
+        throw new Error('Student ID is required for update');
+      }
+      return api.saveCompleteStudent(data, targetId);
+    },
+    onSuccess: (_, variables) => {
+      const targetId = variables.id ?? defaultId;
       queryClient.invalidateQueries({ queryKey: queryKeys.students });
-      queryClient.invalidateQueries({ queryKey: queryKeys.student(id) });
-      queryClient.invalidateQueries({ queryKey: queryKeys.studentProfile(id) });
+      if (targetId) {
+        queryClient.invalidateQueries({ queryKey: queryKeys.student(targetId) });
+        queryClient.invalidateQueries({ queryKey: queryKeys.studentProfile(targetId) });
+      }
       queryClient.invalidateQueries({ queryKey: queryKeys.dashboard });
     },
   });
