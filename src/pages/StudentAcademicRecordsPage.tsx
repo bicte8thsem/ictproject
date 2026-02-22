@@ -14,7 +14,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { SemesterAcademicRecords } from '@/components/SemesterAcademicRecords';
-import { ChevronLeft, LogOut, BookOpen, User, Plus, Home, Edit } from 'lucide-react';
+import { ChevronLeft, LogOut, BookOpen, User, Plus, Home, Edit, Eye } from 'lucide-react';
 import type { ProgramType, Subject } from '@/types';
 
 interface StudentAcademicRecordsPageProps {
@@ -148,6 +148,20 @@ export function StudentAcademicRecordsPage({ studentId }: StudentAcademicRecords
               >
                 <Plus className="w-4 h-4 sm:mr-2" />
                 <span className="hidden sm:inline">Add Student</span>
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() =>
+                  navigateTo({
+                    page: 'student-profile',
+                    studentId: effectiveStudentId,
+                    studentName: student.name,
+                  })
+                }
+              >
+                <Eye className="w-4 h-4 sm:mr-2" />
+                <span className="hidden sm:inline">View Profile</span>
               </Button>
               <Button
                 variant="outline"

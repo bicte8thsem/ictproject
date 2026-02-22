@@ -151,6 +151,19 @@ export function EditStudentPage({ studentId }: EditStudentPageProps) {
     return parsed.toISOString().split('T')[0];
   };
 
+  const normalizeProgram = (value: unknown): 'BCA' | 'BICTE' => {
+    return value === 'BICTE' ? 'BICTE' : 'BCA';
+  };
+
+  const normalizeSemester = (value: unknown): number => {
+    const parsed = Number(value);
+    if (!Number.isFinite(parsed)) return 1;
+    const rounded = Math.trunc(parsed);
+    if (rounded < 1) return 1;
+    if (rounded > 8) return 8;
+    return rounded;
+  };
+
   // Populate form with existing data
   useEffect(() => {
     if (profile && isProfileData(profile)) {
@@ -168,8 +181,8 @@ export function EditStudentPage({ studentId }: EditStudentPageProps) {
         mobile_no: student.mobile_no || '',
         email_id: student.email_id || '',
         residential_no: student.residential_no || '',
-        program: student.program,
-        current_semester: student.current_semester,
+        program: normalizeProgram(student.program),
+        current_semester: normalizeSemester(student.current_semester),
         local_address: address?.local_address || '',
         district: address?.district || '',
         state: address?.state || '',
@@ -557,7 +570,7 @@ export function EditStudentPage({ studentId }: EditStudentPageProps) {
                 <div className="space-y-2">
                   <Label htmlFor="program">Program *</Label>
                   <Select 
-                    value={watch('program')} 
+                    value={normalizeProgram(watch('program'))} 
                     onValueChange={(v) => setValue('program', v as 'BCA' | 'BICTE', { shouldValidate: true, shouldDirty: true })}
                   >
                     <SelectTrigger>
@@ -573,7 +586,7 @@ export function EditStudentPage({ studentId }: EditStudentPageProps) {
                 <div className="space-y-2">
                   <Label htmlFor="current_semester">Current Semester *</Label>
                   <Select 
-                    value={String(watch('current_semester'))} 
+                    value={String(normalizeSemester(watch('current_semester')))} 
                     onValueChange={(v) => setValue('current_semester', parseInt(v, 10), { shouldValidate: true, shouldDirty: true })}
                   >
                     <SelectTrigger>
