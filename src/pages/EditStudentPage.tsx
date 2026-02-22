@@ -593,7 +593,8 @@ export function EditStudentPage({ studentId }: EditStudentPageProps) {
                     control={control}
                     render={({ field }) => {
                       const parsedGender = parseGender(field.value);
-                      const selectedGender = parsedGender ?? invalidGenderValue;
+                      const profileParsedGender = parseGender(rawProfileGender);
+                      const selectedGender = parsedGender ?? profileParsedGender ?? invalidGenderValue;
                       return (
                       <Select value={selectedGender} onValueChange={field.onChange}>
                         <SelectTrigger>
@@ -677,7 +678,8 @@ export function EditStudentPage({ studentId }: EditStudentPageProps) {
                     control={control}
                     render={({ field }) => {
                       const parsedProgram = parseProgram(field.value);
-                      const selectedProgram = parsedProgram ?? invalidProgramValue;
+                      const profileParsedProgram = parseProgram(rawProfileProgram);
+                      const selectedProgram = parsedProgram ?? profileParsedProgram ?? invalidProgramValue;
                       return (
                       <Select value={selectedProgram} onValueChange={field.onChange}>
                         <SelectTrigger>
@@ -719,7 +721,11 @@ export function EditStudentPage({ studentId }: EditStudentPageProps) {
                     control={control}
                     render={({ field }) => {
                       const parsedSemester = parseSemester(field.value);
-                      const selectedSemester = parsedSemester ? String(parsedSemester) : invalidSemesterValue;
+                      const profileParsedSemester = parseSemester(rawProfileSemester);
+                      const selectedSemester =
+                        parsedSemester ? String(parsedSemester) :
+                        profileParsedSemester ? String(profileParsedSemester) :
+                        invalidSemesterValue;
                       return (
                       <Select value={selectedSemester} onValueChange={(v) => field.onChange(parseInt(v, 10))}>
                         <SelectTrigger>
