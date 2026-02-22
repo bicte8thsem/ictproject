@@ -1,4 +1,4 @@
-import{u as f,e as m,f as y}from"./vendor-supabase-xivwf3dQ.js";import{s as n,a as _,b as w}from"./index-ud85YeHW.js";import{r as p}from"./vendor-react-BLAxzjoJ.js";const q="student-photos",b=2*1024*1024;function R(e){return e.replace(/[%_\\]/g,"\\$&")}async function K(){const{data:e,error:t}=await n.from("dashboard_stats").select("*").single();if(t)throw t;return e}async function E(e){const t=Math.max(1,e?.page??1),r=Math.max(1,Math.min(100,e?.pageSize??10)),s=(t-1)*r,o=s+r-1;let i=n.from("students").select(`
+import{u as f,e as m,f as y}from"./vendor-supabase-Btxp1L9W.js";import{s as n,a as _,b as w}from"./index-CNShCxdV.js";import{r as p}from"./vendor-react-CoeCdk7C.js";const q="student-photos",b=2*1024*1024;function R(e){return e.replace(/[%_\\]/g,"\\$&")}async function K(){const{data:e,error:t}=await n.from("dashboard_stats").select("*").single();if(t)throw t;return e}async function E(e){const t=Math.max(1,e?.page??1),r=Math.max(1,Math.min(100,e?.pageSize??10)),s=(t-1)*r,o=s+r-1;let i=n.from("students").select(`
       *,
       address:student_addresses(*),
       parents:parent_details(*),

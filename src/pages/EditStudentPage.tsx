@@ -3,7 +3,7 @@
 // ============================================
 
 import { useEffect, useState, type ChangeEvent } from 'react';
-import { useForm } from 'react-hook-form';
+import { Controller, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { MAX_STUDENT_PHOTO_SIZE_BYTES, studentFormSchema } from '@/lib/validations';
 import { useAuth } from '@/contexts/AuthContext';
@@ -118,11 +118,11 @@ export function EditStudentPage({ studentId }: EditStudentPageProps) {
   const [photoError, setPhotoError] = useState('');
 
   const {
+    control,
     register,
     handleSubmit,
-    setValue,
-    watch,
     reset,
+    setError,
     formState: { errors, isSubmitting },
   } = useForm({
     resolver: zodResolver(studentFormSchema),
@@ -272,7 +272,33 @@ export function EditStudentPage({ studentId }: EditStudentPageProps) {
 
   const onSubmit = async (rawData: unknown) => {
     try {
-      const data = studentFormSchema.parse(rawData);
+      const sourceData = (rawData && typeof rawData === 'object')
+        ? (rawData as Record<string, unknown>)
+        : {};
+      const normalizedInput: Record<string, unknown> = {
+        ...sourceData,
+        program: normalizeProgram(sourceData.program),
+        current_semester: normalizeSemester(sourceData.current_semester),
+      };
+
+      const parsed = studentFormSchema.safeParse(normalizedInput);
+      if (!parsed.success) {
+        const firstIssue = parsed.error.issues[0];
+        const field = String(firstIssue?.path?.[0] ?? '');
+        const message = firstIssue?.message || 'Please correct the highlighted fields.';
+
+        if (field === 'program') {
+          setError('program', { type: 'manual', message: 'Please select a valid program.' });
+        }
+        if (field === 'current_semester') {
+          setError('current_semester', { type: 'manual', message: 'Please select a valid semester.' });
+        }
+
+        toast.error(message);
+        return;
+      }
+
+      const data = parsed.data;
       if (!effectiveStudentId) {
         toast.error('Student ID is missing. Please reload and try again.');
         return;
@@ -522,19 +548,22 @@ export function EditStudentPage({ studentId }: EditStudentPageProps) {
 
                 <div className="space-y-2">
                   <Label htmlFor="gender">Gender *</Label>
-                  <Select 
-                    value={watch('gender')} 
-                    onValueChange={(v) => setValue('gender', v as 'Male' | 'Female' | 'Other', { shouldValidate: true, shouldDirty: true, shouldTouch: true })}
-                  >
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="Male">Male</SelectItem>
-                      <SelectItem value="Female">Female</SelectItem>
-                      <SelectItem value="Other">Other</SelectItem>
-                    </SelectContent>
-                  </Select>
+                  <Controller
+                    name="gender"
+                    control={control}
+                    render={({ field }) => (
+                      <Select value={field.value} onValueChange={field.onChange}>
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="Male">Male</SelectItem>
+                          <SelectItem value="Female">Female</SelectItem>
+                          <SelectItem value="Other">Other</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    )}
+                  />
                   {errors.gender && (
                     <p className="text-sm text-red-500">{String(errors.gender.message)}</p>
                   )}
@@ -583,18 +612,21 @@ export function EditStudentPage({ studentId }: EditStudentPageProps) {
 
                 <div className="space-y-2">
                   <Label htmlFor="program">Program *</Label>
-                  <Select 
-                    value={normalizeProgram(watch('program'))}
-                    onValueChange={(v) => setValue('program', v as 'BCA' | 'BICTE', { shouldValidate: true, shouldDirty: true, shouldTouch: true })}
-                  >
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="BCA">BCA</SelectItem>
-                      <SelectItem value="BICTE">BICTE</SelectItem>
-                    </SelectContent>
-                  </Select>
+                  <Controller
+                    name="program"
+                    control={control}
+                    render={({ field }) => (
+                      <Select value={normalizeProgram(field.value)} onValueChange={field.onChange}>
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="BCA">BCA</SelectItem>
+                          <SelectItem value="BICTE">BICTE</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    )}
+                  />
                   {errors.program && (
                     <p className="text-sm text-red-500">{String(errors.program.message)}</p>
                   )}
@@ -602,21 +634,27 @@ export function EditStudentPage({ studentId }: EditStudentPageProps) {
 
                 <div className="space-y-2">
                   <Label htmlFor="current_semester">Current Semester *</Label>
-                  <Select 
-                    value={String(normalizeSemester(watch('current_semester')))}
-                    onValueChange={(v) => setValue('current_semester', parseInt(v, 10), { shouldValidate: true, shouldDirty: true, shouldTouch: true })}
-                  >
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {Array.from({ length: 8 }, (_, i) => (
-                        <SelectItem key={i + 1} value={String(i + 1)}>
-                          {i + 1}{['st', 'nd', 'rd', 'th', 'th', 'th', 'th', 'th'][i]} Semester
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  <Controller
+                    name="current_semester"
+                    control={control}
+                    render={({ field }) => (
+                      <Select
+                        value={String(normalizeSemester(field.value))}
+                        onValueChange={(v) => field.onChange(parseInt(v, 10))}
+                      >
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {Array.from({ length: 8 }, (_, i) => (
+                            <SelectItem key={i + 1} value={String(i + 1)}>
+                              {i + 1}{['st', 'nd', 'rd', 'th', 'th', 'th', 'th', 'th'][i]} Semester
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    )}
+                  />
                   {errors.current_semester && (
                     <p className="text-sm text-red-500">{String(errors.current_semester.message)}</p>
                   )}
