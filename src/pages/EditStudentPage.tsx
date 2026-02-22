@@ -151,6 +151,14 @@ export function EditStudentPage({ studentId }: EditStudentPageProps) {
     return parsed.toISOString().split('T')[0];
   };
 
+  const sanitizeEmail = (value?: string | null) => {
+    if (!value) return '';
+    const normalized = value.trim();
+    if (!normalized) return '';
+    const isValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalized);
+    return isValid ? normalized : '';
+  };
+
   const normalizeSemester = (value: unknown): number => {
     const parsed = Number(value);
     if (!Number.isFinite(parsed)) return 1;
@@ -175,7 +183,7 @@ export function EditStudentPage({ studentId }: EditStudentPageProps) {
         level: student.level || 'Bachelor',
         symbol_no: student.symbol_no || '',
         mobile_no: student.mobile_no || '',
-        email_id: student.email_id || '',
+        email_id: sanitizeEmail(student.email_id),
         residential_no: student.residential_no || '',
         program: student.program === 'BICTE' ? 'BICTE' : 'BCA',
         current_semester: normalizeSemester(student.current_semester),
@@ -206,24 +214,6 @@ export function EditStudentPage({ studentId }: EditStudentPageProps) {
       setPhotoPreview(student.photo_url || '');
     }
   }, [profile, reset]);
-
-  const onInvalidSubmit = () => {
-    const getFirstErrorMessage = (value: unknown): string | null => {
-      if (!value || typeof value !== 'object') return null;
-      if ('message' in value) {
-        const message = (value as { message?: unknown }).message;
-        if (typeof message === 'string' && message.trim().length > 0) return message;
-      }
-      for (const nested of Object.values(value)) {
-        const message = getFirstErrorMessage(nested);
-        if (message) return message;
-      }
-      return null;
-    };
-
-    const firstError = getFirstErrorMessage(errors);
-    toast.error(firstError ?? 'Please fix the highlighted fields and try again.');
-  };
 
   useEffect(() => {
     return () => {
@@ -484,7 +474,7 @@ export function EditStudentPage({ studentId }: EditStudentPageProps) {
 
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <form onSubmit={handleSubmit(onSubmit, onInvalidSubmit)} className="space-y-6">
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
           {/* Personal Details */}
           <Card className="border-0 shadow-md">
             <CardHeader>
