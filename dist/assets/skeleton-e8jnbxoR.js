@@ -1,1 +1,0 @@
-import{j as o}from"./vendor-supabase-xivwf3dQ.js";import{c as s}from"./logo-BY9dU4FY.js";function r({className:t,...e}){return o.jsx("div",{"data-slot":"skeleton",className:s("bg-accent animate-pulse rounded-md",t),...e})}export{r as S};
