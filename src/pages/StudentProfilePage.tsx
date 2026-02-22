@@ -238,9 +238,20 @@ export function StudentProfilePage({ studentId }: StudentProfilePageProps) {
 
   const getProgramColor = (program: string) => {
     switch (program) {
-      case 'BCA': return 'bg-primary/10 text-primary';
-      case 'BICTE': return 'bg-purple-100 text-purple-700';
+      case 'BCA': return 'bg-blue-100 text-blue-800';
+      case 'BICTE': return 'bg-emerald-100 text-emerald-800';
       default: return 'bg-muted text-foreground';
+    }
+  };
+
+  const getHeroGradient = (program: string) => {
+    switch (program) {
+      case 'BCA':
+        return 'bg-gradient-to-r from-blue-700 to-indigo-700';
+      case 'BICTE':
+        return 'bg-gradient-to-r from-emerald-700 to-teal-700';
+      default:
+        return 'bg-gradient-to-r from-primary to-primary/90';
     }
   };
 
@@ -439,7 +450,7 @@ export function StudentProfilePage({ studentId }: StudentProfilePageProps) {
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Profile Header */}
-        <Card className="border-0 shadow-md mb-6 bg-gradient-to-r from-primary to-primary/90">
+        <Card className={`border-0 shadow-md mb-6 ${getHeroGradient(student.program)}`}>
           <CardContent className="p-6">
             <div className="flex flex-col md:flex-row items-start md:items-center gap-6">
               <Avatar className="w-20 h-20 border border-white/30">
@@ -462,7 +473,7 @@ export function StudentProfilePage({ studentId }: StudentProfilePageProps) {
                   </span>
                   <span className="flex items-center gap-1">
                     <BookOpen className="w-4 h-4" />
-                    <Badge className={`${getProgramColor(student.program)} border-0`}>
+                    <Badge className={`${getProgramColor(student.program)} border-0 font-semibold`}>
                       {student.program}
                     </Badge>
                   </span>

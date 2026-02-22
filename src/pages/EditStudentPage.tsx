@@ -116,6 +116,9 @@ export function EditStudentPage({ studentId }: EditStudentPageProps) {
   const [photoFile, setPhotoFile] = useState<File | null>(null);
   const [photoPreview, setPhotoPreview] = useState('');
   const [photoError, setPhotoError] = useState('');
+  const [genderSelectValue, setGenderSelectValue] = useState<string | undefined>(undefined);
+  const [programSelectValue, setProgramSelectValue] = useState<string | undefined>(undefined);
+  const [semesterSelectValue, setSemesterSelectValue] = useState<string | undefined>(undefined);
 
   const {
     control,
@@ -194,10 +197,13 @@ export function EditStudentPage({ studentId }: EditStudentPageProps) {
   useEffect(() => {
     if (profile && isProfileData(profile)) {
       const { student, address, parents, academic_history } = profile;
+      const parsedGender = parseGender(student.gender);
+      const parsedProgram = parseProgram(student.program);
+      const parsedSemester = parseSemester(student.current_semester);
       reset({
         college_enrollment_no: student.college_enrollment_no,
         name: student.name,
-        gender: parseGender(student.gender),
+        gender: parsedGender,
         religion: student.religion || '',
         birthdate: formatDateForInput(student.birthdate),
         faculty: student.faculty || 'Computer Science',
@@ -207,8 +213,8 @@ export function EditStudentPage({ studentId }: EditStudentPageProps) {
         mobile_no: student.mobile_no || '',
         email_id: sanitizeEmail(student.email_id),
         residential_no: student.residential_no || '',
-        program: parseProgram(student.program),
-        current_semester: parseSemester(student.current_semester),
+        program: parsedProgram,
+        current_semester: parsedSemester,
         local_address: address?.local_address || '',
         district: address?.district || '',
         state: address?.state || '',
@@ -233,6 +239,11 @@ export function EditStudentPage({ studentId }: EditStudentPageProps) {
         hs_gpa: academic_history?.hs_gpa,
         major_subject: academic_history?.major_subject || '',
       });
+      setGenderSelectValue(parsedGender ?? (student.gender != null ? String(student.gender) : undefined));
+      setProgramSelectValue(parsedProgram ?? (student.program != null ? String(student.program) : undefined));
+      setSemesterSelectValue(
+        parsedSemester ? String(parsedSemester) : (student.current_semester != null ? String(student.current_semester) : undefined)
+      );
       setPhotoPreview(student.photo_url || '');
     }
   }, [profile, reset]);
@@ -592,11 +603,16 @@ export function EditStudentPage({ studentId }: EditStudentPageProps) {
                     name="gender"
                     control={control}
                     render={({ field }) => {
-                      const parsedGender = parseGender(field.value);
-                      const profileParsedGender = parseGender(rawProfileGender);
-                      const selectedGender = parsedGender ?? profileParsedGender ?? invalidGenderValue;
+                      const selectedGender =
+                        genderSelectValue ?? parseGender(field.value) ?? parseGender(rawProfileGender) ?? invalidGenderValue;
                       return (
-                      <Select value={selectedGender} onValueChange={field.onChange}>
+                      <Select
+                        value={selectedGender}
+                        onValueChange={(v) => {
+                          setGenderSelectValue(v);
+                          field.onChange(v);
+                        }}
+                      >
                         <SelectTrigger>
                           <SelectValue
                             placeholder={
@@ -677,11 +693,16 @@ export function EditStudentPage({ studentId }: EditStudentPageProps) {
                     name="program"
                     control={control}
                     render={({ field }) => {
-                      const parsedProgram = parseProgram(field.value);
-                      const profileParsedProgram = parseProgram(rawProfileProgram);
-                      const selectedProgram = parsedProgram ?? profileParsedProgram ?? invalidProgramValue;
+                      const selectedProgram =
+                        programSelectValue ?? parseProgram(field.value) ?? parseProgram(rawProfileProgram) ?? invalidProgramValue;
                       return (
-                      <Select value={selectedProgram} onValueChange={field.onChange}>
+                      <Select
+                        value={selectedProgram}
+                        onValueChange={(v) => {
+                          setProgramSelectValue(v);
+                          field.onChange(v);
+                        }}
+                      >
                         <SelectTrigger>
                           <SelectValue
                             placeholder={
@@ -720,14 +741,19 @@ export function EditStudentPage({ studentId }: EditStudentPageProps) {
                     name="current_semester"
                     control={control}
                     render={({ field }) => {
-                      const parsedSemester = parseSemester(field.value);
-                      const profileParsedSemester = parseSemester(rawProfileSemester);
                       const selectedSemester =
-                        parsedSemester ? String(parsedSemester) :
-                        profileParsedSemester ? String(profileParsedSemester) :
+                        semesterSelectValue ??
+                        (parseSemester(field.value) ? String(parseSemester(field.value)) : undefined) ??
+                        (parseSemester(rawProfileSemester) ? String(parseSemester(rawProfileSemester)) : undefined) ??
                         invalidSemesterValue;
                       return (
-                      <Select value={selectedSemester} onValueChange={(v) => field.onChange(parseInt(v, 10))}>
+                      <Select
+                        value={selectedSemester}
+                        onValueChange={(v) => {
+                          setSemesterSelectValue(v);
+                          field.onChange(parseInt(v, 10));
+                        }}
+                      >
                         <SelectTrigger>
                           <SelectValue
                             placeholder={
