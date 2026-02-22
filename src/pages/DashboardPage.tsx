@@ -111,7 +111,14 @@ export function DashboardPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 sm:grid-cols-3 items-center gap-3 py-3 sm:py-0 sm:h-20">
             <div className="flex justify-center sm:justify-start">
-              <img src={logo} alt="Logo" className="h-14 sm:h-16 w-auto shrink-0" />
+              <button
+                type="button"
+                onClick={() => navigateTo({ page: 'dashboard' })}
+                aria-label="Go to home"
+                className="shrink-0"
+              >
+                <img src={logo} alt="Logo" className="h-14 sm:h-16 w-auto" />
+              </button>
             </div>
             <div className="text-center min-w-0">
               <p className="text-sm sm:text-base font-semibold text-foreground leading-tight truncate">

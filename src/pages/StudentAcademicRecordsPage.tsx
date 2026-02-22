@@ -126,7 +126,13 @@ export function StudentAcademicRecordsPage({ studentId }: StudentAcademicRecords
                 <ChevronLeft className="w-4 h-4 mr-1" />
                 Back
               </Button>
-              <img src={logo} alt="Janamaitri Logo" className="h-10 w-auto" />
+              <button
+                type="button"
+                onClick={() => navigateTo({ page: 'dashboard' })}
+                aria-label="Go to home"
+              >
+                <img src={logo} alt="Janamaitri Logo" className="h-10 w-auto" />
+              </button>
               <div className="min-w-0">
                 <h1 className="text-base sm:text-lg font-bold text-foreground truncate">Academic Records</h1>
                 <p className="text-xs text-muted-foreground hidden sm:block">{student.name}</p>

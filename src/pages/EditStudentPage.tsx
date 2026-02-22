@@ -168,6 +168,11 @@ export function EditStudentPage({ studentId }: EditStudentPageProps) {
     return rounded;
   };
 
+  const normalizeProgram = (value: unknown): 'BCA' | 'BICTE' => {
+    const normalized = String(value ?? '').trim().toUpperCase();
+    return normalized === 'BICTE' ? 'BICTE' : 'BCA';
+  };
+
   // Populate form with existing data
   useEffect(() => {
     if (profile && isProfileData(profile)) {
@@ -185,7 +190,7 @@ export function EditStudentPage({ studentId }: EditStudentPageProps) {
         mobile_no: student.mobile_no || '',
         email_id: sanitizeEmail(student.email_id),
         residential_no: student.residential_no || '',
-        program: student.program === 'BICTE' ? 'BICTE' : 'BCA',
+        program: normalizeProgram(student.program),
         current_semester: normalizeSemester(student.current_semester),
         local_address: address?.local_address || '',
         district: address?.district || '',
@@ -426,7 +431,13 @@ export function EditStudentPage({ studentId }: EditStudentPageProps) {
                 <ChevronLeft className="w-4 h-4 mr-1" />
                 Back
               </Button>
-              <img src={logo} alt="Janamaitri Logo" className="h-10 w-auto" />
+              <button
+                type="button"
+                onClick={() => navigateTo({ page: 'dashboard' })}
+                aria-label="Go to home"
+              >
+                <img src={logo} alt="Janamaitri Logo" className="h-10 w-auto" />
+              </button>
               <div className="min-w-0">
                 <h1 className="text-base sm:text-lg font-bold text-foreground truncate">Edit Student</h1>
                 <p className="text-xs text-muted-foreground hidden sm:block">Janamaitri Multiple Campus, Department of ICT, Student Record</p>
@@ -573,7 +584,7 @@ export function EditStudentPage({ studentId }: EditStudentPageProps) {
                 <div className="space-y-2">
                   <Label htmlFor="program">Program *</Label>
                   <Select 
-                    value={watch('program')} 
+                    value={normalizeProgram(watch('program'))}
                     onValueChange={(v) => setValue('program', v as 'BCA' | 'BICTE', { shouldValidate: true, shouldDirty: true, shouldTouch: true })}
                   >
                     <SelectTrigger>
@@ -592,7 +603,7 @@ export function EditStudentPage({ studentId }: EditStudentPageProps) {
                 <div className="space-y-2">
                   <Label htmlFor="current_semester">Current Semester *</Label>
                   <Select 
-                    value={String(watch('current_semester'))}
+                    value={String(normalizeSemester(watch('current_semester')))}
                     onValueChange={(v) => setValue('current_semester', parseInt(v, 10), { shouldValidate: true, shouldDirty: true, shouldTouch: true })}
                   >
                     <SelectTrigger>
