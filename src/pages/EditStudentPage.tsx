@@ -151,10 +151,6 @@ export function EditStudentPage({ studentId }: EditStudentPageProps) {
     return parsed.toISOString().split('T')[0];
   };
 
-  const normalizeProgram = (value: unknown): 'BCA' | 'BICTE' => {
-    return value === 'BICTE' ? 'BICTE' : 'BCA';
-  };
-
   const normalizeSemester = (value: unknown): number => {
     const parsed = Number(value);
     if (!Number.isFinite(parsed)) return 1;
@@ -181,7 +177,7 @@ export function EditStudentPage({ studentId }: EditStudentPageProps) {
         mobile_no: student.mobile_no || '',
         email_id: student.email_id || '',
         residential_no: student.residential_no || '',
-        program: normalizeProgram(student.program),
+        program: student.program === 'BICTE' ? 'BICTE' : 'BCA',
         current_semester: normalizeSemester(student.current_semester),
         local_address: address?.local_address || '',
         district: address?.district || '',
@@ -212,7 +208,21 @@ export function EditStudentPage({ studentId }: EditStudentPageProps) {
   }, [profile, reset]);
 
   const onInvalidSubmit = () => {
-    toast.error('Please fix the highlighted fields and try again.');
+    const getFirstErrorMessage = (value: unknown): string | null => {
+      if (!value || typeof value !== 'object') return null;
+      if ('message' in value) {
+        const message = (value as { message?: unknown }).message;
+        if (typeof message === 'string' && message.trim().length > 0) return message;
+      }
+      for (const nested of Object.values(value)) {
+        const message = getFirstErrorMessage(nested);
+        if (message) return message;
+      }
+      return null;
+    };
+
+    const firstError = getFirstErrorMessage(errors);
+    toast.error(firstError ?? 'Please fix the highlighted fields and try again.');
   };
 
   useEffect(() => {
@@ -524,6 +534,9 @@ export function EditStudentPage({ studentId }: EditStudentPageProps) {
                       <SelectItem value="Other">Other</SelectItem>
                     </SelectContent>
                   </Select>
+                  {errors.gender && (
+                    <p className="text-sm text-red-500">{String(errors.gender.message)}</p>
+                  )}
                 </div>
 
                 <div className="space-y-2">
@@ -570,7 +583,7 @@ export function EditStudentPage({ studentId }: EditStudentPageProps) {
                 <div className="space-y-2">
                   <Label htmlFor="program">Program *</Label>
                   <Select 
-                    value={normalizeProgram(watch('program'))} 
+                    value={watch('program') || undefined} 
                     onValueChange={(v) => setValue('program', v as 'BCA' | 'BICTE', { shouldValidate: true, shouldDirty: true })}
                   >
                     <SelectTrigger>
@@ -581,12 +594,19 @@ export function EditStudentPage({ studentId }: EditStudentPageProps) {
                       <SelectItem value="BICTE">BICTE</SelectItem>
                     </SelectContent>
                   </Select>
+                  {errors.program && (
+                    <p className="text-sm text-red-500">{String(errors.program.message)}</p>
+                  )}
                 </div>
 
                 <div className="space-y-2">
                   <Label htmlFor="current_semester">Current Semester *</Label>
                   <Select 
-                    value={String(normalizeSemester(watch('current_semester')))} 
+                    value={
+                      typeof watch('current_semester') === 'number'
+                        ? String(watch('current_semester'))
+                        : undefined
+                    }
                     onValueChange={(v) => setValue('current_semester', parseInt(v, 10), { shouldValidate: true, shouldDirty: true })}
                   >
                     <SelectTrigger>
@@ -600,6 +620,9 @@ export function EditStudentPage({ studentId }: EditStudentPageProps) {
                       ))}
                     </SelectContent>
                   </Select>
+                  {errors.current_semester && (
+                    <p className="text-sm text-red-500">{String(errors.current_semester.message)}</p>
+                  )}
                 </div>
 
                 <div className="space-y-2">
