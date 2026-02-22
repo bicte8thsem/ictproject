@@ -36,7 +36,9 @@ import {
   Save,
   Loader2,
   Camera,
-  Home
+  Home,
+  Plus,
+  Edit
 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -426,6 +428,22 @@ export function EditStudentPage({ studentId }: EditStudentPageProps) {
               >
                 <Home className="w-4 h-4 sm:mr-2" />
                 <span className="hidden sm:inline">Home</span>
+              </Button>
+              <Button
+                size="sm"
+                onClick={() => navigateTo({ page: 'add-student' })}
+                className="bg-primary hover:bg-primary/90"
+              >
+                <Plus className="w-4 h-4 sm:mr-2" />
+                <span className="hidden sm:inline">Add Student</span>
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                disabled
+              >
+                <Edit className="w-4 h-4 sm:mr-2" />
+                <span className="hidden sm:inline">Edit</span>
               </Button>
               <Button
                 variant="ghost"

@@ -57,8 +57,7 @@ export function LoginPage() {
 
         <Card className="border-0 shadow-xl shadow-primary/10 bg-white">
           <CardHeader className="pb-4">
-            <CardTitle className="text-xl text-foreground text-center">Login</CardTitle>
-            <p className="text-sm text-muted-foreground text-center">Enter Details For Login</p>
+            <CardTitle className="text-xl text-foreground text-center">Enter Details For Login</CardTitle>
           </CardHeader>
           
           <CardContent>

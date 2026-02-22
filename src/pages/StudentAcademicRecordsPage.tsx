@@ -14,8 +14,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { SemesterAcademicRecords } from '@/components/SemesterAcademicRecords';
-import { ChevronLeft, LogOut, BookOpen, User, Plus, Home } from 'lucide-react';
-import type { ProgramType } from '@/types';
+import { ChevronLeft, LogOut, BookOpen, User, Plus, Home, Edit } from 'lucide-react';
+import type { ProgramType, Subject } from '@/types';
 
 interface StudentAcademicRecordsPageProps {
   studentId: string;
@@ -51,16 +51,37 @@ export function StudentAcademicRecordsPage({ studentId }: StudentAcademicRecords
 
   const activeSemester = selectedSemester ?? student?.current_semester ?? 1;
 
-  const semesterSubjects = useMemo(() => {
-    if (!student || !allSubjects) return [];
-    return allSubjects.filter(
-      (subject) => subject.program === student.program && subject.semester === activeSemester
-    );
-  }, [allSubjects, student, activeSemester]);
+  const subjectsBySemester = useMemo(() => {
+    const grouped = new Map<number, Subject[]>();
+    if (!student || !allSubjects) return grouped;
+
+    for (let sem = 1; sem <= 8; sem += 1) {
+      grouped.set(
+        sem,
+        allSubjects.filter(
+          (subject) => subject.program === student.program && subject.semester === sem
+        )
+      );
+    }
+
+    return grouped;
+  }, [allSubjects, student]);
 
   const handleLogout = async () => {
     await logout();
     navigateTo({ page: 'login' });
+  };
+
+  const handleBack = () => {
+    if (window.history.length > 1) {
+      window.history.back();
+      return;
+    }
+    navigateTo({
+      page: 'student-profile',
+      studentId: effectiveStudentId,
+      studentName: student?.name,
+    });
   };
 
   if (isLoading || isSubjectsLoading) {
@@ -100,13 +121,7 @@ export function StudentAcademicRecordsPage({ studentId }: StudentAcademicRecords
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={() =>
-                  navigateTo({
-                    page: 'student-profile',
-                    studentId: effectiveStudentId,
-                    studentName: student.name,
-                  })
-                }
+                onClick={handleBack}
               >
                 <ChevronLeft className="w-4 h-4 mr-1" />
                 Back
@@ -117,7 +132,7 @@ export function StudentAcademicRecordsPage({ studentId }: StudentAcademicRecords
                 <p className="text-xs text-muted-foreground hidden sm:block">{student.name}</p>
               </div>
             </div>
-            <div className="flex items-center gap-2 sm:gap-3 justify-end">
+            <div className="flex items-center gap-2 sm:gap-3 w-full sm:w-auto justify-end">
               <Button
                 variant="outline"
                 size="sm"
@@ -133,6 +148,20 @@ export function StudentAcademicRecordsPage({ studentId }: StudentAcademicRecords
               >
                 <Plus className="w-4 h-4 sm:mr-2" />
                 <span className="hidden sm:inline">Add Student</span>
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() =>
+                  navigateTo({
+                    page: 'edit-student',
+                    studentId: effectiveStudentId,
+                    studentName: student.name,
+                  })
+                }
+              >
+                <Edit className="w-4 h-4 sm:mr-2" />
+                <span className="hidden sm:inline">Edit</span>
               </Button>
               <Button
                 variant="ghost"
@@ -186,7 +215,7 @@ export function StudentAcademicRecordsPage({ studentId }: StudentAcademicRecords
                     studentId={effectiveStudentId}
                     semester={sem}
                     program={student.program}
-                    subjects={sem === activeSemester ? semesterSubjects : []}
+                    subjects={subjectsBySemester.get(sem) ?? []}
                   />
                 </TabsContent>
               ))}

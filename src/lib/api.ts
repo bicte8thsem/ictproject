@@ -475,6 +475,60 @@ export async function promoteStudent(studentId: string): Promise<{ success: bool
   return data as unknown as { success: boolean; message: string; previous_semester?: number; new_semester?: number };
 }
 
+export async function graduateStudent(studentId: string): Promise<{ success: boolean; message: string; semester?: number }> {
+  const { data: rpcData, error: rpcError } = await supabase
+    .rpc('graduate_student', { p_student_id: studentId });
+
+  if (!rpcError) {
+    return rpcData as { success: boolean; message: string; semester?: number };
+  }
+
+  // Fallback if RPC is not available in DB yet
+  const rpcCode = (rpcError as { code?: string }).code;
+  if (rpcCode !== 'PGRST202' && rpcCode !== '42883') {
+    throw rpcError;
+  }
+
+  const { data: student, error: studentError } = await supabase
+    .from('students')
+    .select('current_semester,status')
+    .eq('id', studentId)
+    .single();
+
+  if (studentError) throw studentError;
+  if (!student) throw new Error('Student not found');
+
+  const currentSemester = Number((student as { current_semester?: unknown }).current_semester ?? 0);
+  const currentStatus = String((student as { status?: unknown }).status ?? '');
+
+  if (currentStatus !== 'Active') {
+    return { success: false, message: 'Only active students can be graduated' };
+  }
+
+  if (currentSemester !== 8) {
+    return { success: false, message: 'Student must be in 8th semester to graduate' };
+  }
+
+  const today = new Date().toISOString().split('T')[0];
+
+  const { error: updateStudentError } = await supabase
+    .from('students')
+    .update({ status: 'Graduated' })
+    .eq('id', studentId);
+
+  if (updateStudentError) throw updateStudentError;
+
+  const { error: updateSemesterError } = await supabase
+    .from('student_semesters')
+    .update({ status: 'Completed', completed_date: today })
+    .eq('student_id', studentId)
+    .eq('semester', 8);
+
+  if (updateSemesterError) throw updateSemesterError;
+
+  return { success: true, message: 'Student graduated successfully', semester: 8 };
+}
+
 // ============================================
 // COMPLETE STUDENT SAVE (TRANSACTION)
 // ============================================

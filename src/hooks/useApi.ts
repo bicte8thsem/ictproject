@@ -269,3 +269,17 @@ export function usePromoteStudent() {
     },
   });
 }
+
+export function useGraduateStudent() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (studentId: string) => api.graduateStudent(studentId),
+    onSuccess: (_, studentId) => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.students });
+      queryClient.invalidateQueries({ queryKey: queryKeys.student(studentId) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.studentProfile(studentId) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.dashboard });
+    },
+  });
+}

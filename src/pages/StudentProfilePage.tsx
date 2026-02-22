@@ -5,7 +5,7 @@
 import { useEffect, useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { navigateTo } from '@/lib/router';
-import { useStudentProfile, usePromoteStudent, useStudentIdBySlug, useSemesterRecords } from '@/hooks/useApi';
+import { useStudentProfile, usePromoteStudent, useGraduateStudent, useStudentIdBySlug, useSemesterRecords } from '@/hooks/useApi';
 import { useAutoHideHeader } from '@/hooks/useAutoHideHeader';
 import logo from '../../logo.svg';
 import { isUuid } from '@/lib/slug';
@@ -148,6 +148,7 @@ export function StudentProfilePage({ studentId }: StudentProfilePageProps) {
   const { logout } = useAuth();
   const isHeaderVisible = useAutoHideHeader();
   const [showPromoteDialog, setShowPromoteDialog] = useState(false);
+  const [showGraduateDialog, setShowGraduateDialog] = useState(false);
   const [isLoadingTimedOut, setIsLoadingTimedOut] = useState(false);
   const isDirectUuid = isUuid(studentId);
   const { data: resolvedStudentId, isLoading: isResolvingStudentId } = useStudentIdBySlug(
@@ -176,6 +177,7 @@ export function StudentProfilePage({ studentId }: StudentProfilePageProps) {
   
   const student = isProfileData(profile) ? profile.student : null;
   const promoteMutation = usePromoteStudent();
+  const graduateMutation = useGraduateStudent();
   const currentSemesterForSummary = student?.current_semester ?? 1;
   const { data: semesterRecords } = useSemesterRecords(effectiveStudentId, currentSemesterForSummary);
 
@@ -196,6 +198,21 @@ export function StudentProfilePage({ studentId }: StudentProfilePageProps) {
       toast.error('Failed to promote student');
     } finally {
       setShowPromoteDialog(false);
+    }
+  };
+
+  const handleGraduate = async () => {
+    try {
+      const result = await graduateMutation.mutateAsync(effectiveStudentId);
+      if (result.success) {
+        toast.success(result.message);
+      } else {
+        toast.error(result.message);
+      }
+    } catch {
+      toast.error('Failed to graduate student');
+    } finally {
+      setShowGraduateDialog(false);
     }
   };
 
@@ -326,7 +343,7 @@ export function StudentProfilePage({ studentId }: StudentProfilePageProps) {
       {/* Header */}
       <header className={`bg-white border-b border-border sticky top-0 z-30 transition-transform duration-300 ${isHeaderVisible ? 'translate-y-0' : '-translate-y-full'}`}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col 2xl:flex-row 2xl:items-center 2xl:justify-between gap-3 py-3">
+          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3 py-3">
             <div className="flex items-center gap-2 sm:gap-3 min-w-0">
               <Button 
                 variant="ghost" 
@@ -343,7 +360,7 @@ export function StudentProfilePage({ studentId }: StudentProfilePageProps) {
               </div>
             </div>
             
-            <div className="flex items-center gap-2 w-full 2xl:w-auto justify-start 2xl:justify-end flex-nowrap overflow-x-auto [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+            <div className="ml-auto flex items-center gap-2 w-full lg:w-auto justify-end flex-nowrap overflow-x-auto [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
               <Button
                 variant="outline"
                 size="sm"
@@ -387,6 +404,16 @@ export function StudentProfilePage({ studentId }: StudentProfilePageProps) {
                 >
                   <TrendingUp className="w-4 h-4" />
                   <span className="hidden xl:inline">Promote</span>
+                </Button>
+              )}
+              {student.current_semester === 8 && student.status === 'Active' && (
+                <Button
+                  size="sm"
+                  onClick={() => setShowGraduateDialog(true)}
+                  className="shrink-0 w-9 px-0 bg-primary hover:bg-primary/90 xl:w-auto xl:px-3"
+                >
+                  <GraduationCap className="w-4 h-4" />
+                  <span className="hidden xl:inline">Graduate</span>
                 </Button>
               )}
               <Button
@@ -613,6 +640,29 @@ export function StudentProfilePage({ studentId }: StudentProfilePageProps) {
               className="bg-secondary hover:bg-secondary/90"
             >
               Promote Student
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <AlertDialog open={showGraduateDialog} onOpenChange={setShowGraduateDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Graduate Student?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will mark <strong>{student.name}</strong> as <strong>Graduated</strong> after completing
+              {' '}8
+              <sup>{['st', 'nd', 'rd', 'th', 'th', 'th', 'th', 'th'][7]}</sup> semester.
+              This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleGraduate}
+              className="bg-primary hover:bg-primary/90"
+            >
+              Graduate Student
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

@@ -212,6 +212,11 @@ export function SemesterAcademicRecords({
           </DialogHeader>
           
           <div className="mb-4 p-3 bg-background rounded-lg">
+            <p className="text-sm text-muted-foreground">Semester</p>
+            <p className="font-medium text-foreground mb-2">
+              {semester}
+              <sup>{['st', 'nd', 'rd', 'th', 'th', 'th', 'th', 'th'][semester - 1]}</sup> Semester
+            </p>
             <p className="text-sm text-muted-foreground">Subject</p>
             <p className="font-medium text-foreground">{subject?.code}: {subject?.name}</p>
           </div>
