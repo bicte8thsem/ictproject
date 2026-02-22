@@ -3,7 +3,7 @@
 // ============================================
 
 import { useEffect, useState, type ChangeEvent } from 'react';
-import { useForm } from 'react-hook-form';
+import { Controller, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { MAX_STUDENT_PHOTO_SIZE_BYTES, studentFormSchema } from '@/lib/validations';
 import { useAuth } from '@/contexts/AuthContext';
@@ -47,10 +47,9 @@ export function AddStudentPage() {
   const [photoError, setPhotoError] = useState('');
 
   const {
+    control,
     register,
     handleSubmit,
-    setValue,
-    watch,
     reset,
     formState: { errors, isSubmitting },
   } = useForm({
@@ -293,19 +292,22 @@ export function AddStudentPage() {
 
                 <div className="space-y-2">
                   <Label htmlFor="gender">Gender *</Label>
-                  <Select 
-                    value={watch('gender')} 
-                    onValueChange={(v) => setValue('gender', v as 'Male' | 'Female' | 'Other')}
-                  >
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="Male">Male</SelectItem>
-                      <SelectItem value="Female">Female</SelectItem>
-                      <SelectItem value="Other">Other</SelectItem>
-                    </SelectContent>
-                  </Select>
+                  <Controller
+                    name="gender"
+                    control={control}
+                    render={({ field }) => (
+                      <Select value={field.value} onValueChange={field.onChange}>
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="Male">Male</SelectItem>
+                          <SelectItem value="Female">Female</SelectItem>
+                          <SelectItem value="Other">Other</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    )}
+                  />
                 </div>
 
                 <div className="space-y-2">
@@ -352,37 +354,46 @@ export function AddStudentPage() {
 
                 <div className="space-y-2">
                   <Label htmlFor="program">Program *</Label>
-                  <Select 
-                    value={watch('program')} 
-                    onValueChange={(v) => setValue('program', v as 'BCA' | 'BICTE')}
-                  >
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="BCA">BCA</SelectItem>
-                      <SelectItem value="BICTE">BICTE</SelectItem>
-                    </SelectContent>
-                  </Select>
+                  <Controller
+                    name="program"
+                    control={control}
+                    render={({ field }) => (
+                      <Select value={field.value} onValueChange={field.onChange}>
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="BCA">BCA</SelectItem>
+                          <SelectItem value="BICTE">BICTE</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    )}
+                  />
                 </div>
 
                 <div className="space-y-2">
                   <Label htmlFor="current_semester">Current Semester *</Label>
-                  <Select 
-                    value={String(watch('current_semester'))} 
-                    onValueChange={(v) => setValue('current_semester', parseInt(v))}
-                  >
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {Array.from({ length: 8 }, (_, i) => (
-                        <SelectItem key={i + 1} value={String(i + 1)}>
-                          {i + 1}{['st', 'nd', 'rd', 'th', 'th', 'th', 'th', 'th'][i]} Semester
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  <Controller
+                    name="current_semester"
+                    control={control}
+                    render={({ field }) => (
+                      <Select
+                        value={String(field.value)}
+                        onValueChange={(v) => field.onChange(parseInt(v, 10))}
+                      >
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {Array.from({ length: 8 }, (_, i) => (
+                            <SelectItem key={i + 1} value={String(i + 1)}>
+                              {i + 1}{['st', 'nd', 'rd', 'th', 'th', 'th', 'th', 'th'][i]} Semester
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    )}
+                  />
                 </div>
 
                 <div className="space-y-2">
