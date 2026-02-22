@@ -179,6 +179,17 @@ export function EditStudentPage({ studentId }: EditStudentPageProps) {
     return rounded;
   };
 
+  const profileStudent = isProfileData(profile) ? profile.student : undefined;
+  const rawProfileGender = profileStudent?.gender;
+  const rawProfileProgram = profileStudent?.program;
+  const rawProfileSemester = profileStudent?.current_semester;
+  const hasInvalidProfileGender = rawProfileGender != null && !parseGender(rawProfileGender);
+  const hasInvalidProfileProgram = rawProfileProgram != null && !parseProgram(rawProfileProgram);
+  const hasInvalidProfileSemester = rawProfileSemester != null && !parseSemester(rawProfileSemester);
+  const invalidGenderValue = hasInvalidProfileGender ? String(rawProfileGender) : undefined;
+  const invalidProgramValue = hasInvalidProfileProgram ? String(rawProfileProgram) : undefined;
+  const invalidSemesterValue = hasInvalidProfileSemester ? String(rawProfileSemester) : undefined;
+
   // Populate form with existing data
   useEffect(() => {
     if (profile && isProfileData(profile)) {
@@ -281,7 +292,6 @@ export function EditStudentPage({ studentId }: EditStudentPageProps) {
       const sourceData = (rawData && typeof rawData === 'object')
         ? (rawData as Record<string, unknown>)
         : {};
-      const profileStudent = isProfileData(profile) ? profile.student : undefined;
       const programValue = parseProgram(sourceData.program) ?? parseProgram(profileStudent?.program);
       const semesterValue = parseSemester(sourceData.current_semester) ?? parseSemester(profileStudent?.current_semester);
       const genderValue = parseGender(sourceData.gender) ?? parseGender(profileStudent?.gender);
@@ -581,21 +591,41 @@ export function EditStudentPage({ studentId }: EditStudentPageProps) {
                   <Controller
                     name="gender"
                     control={control}
-                    render={({ field }) => (
-                      <Select value={parseGender(field.value)} onValueChange={field.onChange}>
+                    render={({ field }) => {
+                      const parsedGender = parseGender(field.value);
+                      const selectedGender = parsedGender ?? invalidGenderValue;
+                      return (
+                      <Select value={selectedGender} onValueChange={field.onChange}>
                         <SelectTrigger>
-                          <SelectValue />
+                          <SelectValue
+                            placeholder={
+                              hasInvalidProfileGender
+                                ? `Invalid DB value: ${String(rawProfileGender)}`
+                                : 'Select gender'
+                            }
+                          />
                         </SelectTrigger>
                         <SelectContent>
+                          {hasInvalidProfileGender && invalidGenderValue && (
+                            <SelectItem value={invalidGenderValue}>
+                              DB value: {invalidGenderValue}
+                            </SelectItem>
+                          )}
                           <SelectItem value="Male">Male</SelectItem>
                           <SelectItem value="Female">Female</SelectItem>
                           <SelectItem value="Other">Other</SelectItem>
                         </SelectContent>
                       </Select>
-                    )}
+                    );
+                    }}
                   />
                   {errors.gender && (
                     <p className="text-sm text-red-500">{String(errors.gender.message)}</p>
+                  )}
+                  {!errors.gender && hasInvalidProfileGender && (
+                    <p className="text-sm text-amber-600">
+                      Invalid DB value detected. Please choose a valid gender and save.
+                    </p>
                   )}
                 </div>
 
@@ -645,20 +675,40 @@ export function EditStudentPage({ studentId }: EditStudentPageProps) {
                   <Controller
                     name="program"
                     control={control}
-                    render={({ field }) => (
-                      <Select value={parseProgram(field.value)} onValueChange={field.onChange}>
+                    render={({ field }) => {
+                      const parsedProgram = parseProgram(field.value);
+                      const selectedProgram = parsedProgram ?? invalidProgramValue;
+                      return (
+                      <Select value={selectedProgram} onValueChange={field.onChange}>
                         <SelectTrigger>
-                          <SelectValue />
+                          <SelectValue
+                            placeholder={
+                              hasInvalidProfileProgram
+                                ? `Invalid DB value: ${String(rawProfileProgram)}`
+                                : 'Select program'
+                            }
+                          />
                         </SelectTrigger>
                         <SelectContent>
+                          {hasInvalidProfileProgram && invalidProgramValue && (
+                            <SelectItem value={invalidProgramValue}>
+                              DB value: {invalidProgramValue}
+                            </SelectItem>
+                          )}
                           <SelectItem value="BCA">BCA</SelectItem>
                           <SelectItem value="BICTE">BICTE</SelectItem>
                         </SelectContent>
                       </Select>
-                    )}
+                    );
+                    }}
                   />
                   {errors.program && (
                     <p className="text-sm text-red-500">{String(errors.program.message)}</p>
+                  )}
+                  {!errors.program && hasInvalidProfileProgram && (
+                    <p className="text-sm text-amber-600">
+                      Invalid DB value detected. Please choose a valid program and save.
+                    </p>
                   )}
                 </div>
 
@@ -667,15 +717,26 @@ export function EditStudentPage({ studentId }: EditStudentPageProps) {
                   <Controller
                     name="current_semester"
                     control={control}
-                    render={({ field }) => (
-                      <Select
-                        value={field.value ? String(field.value) : undefined}
-                        onValueChange={(v) => field.onChange(parseInt(v, 10))}
-                      >
+                    render={({ field }) => {
+                      const parsedSemester = parseSemester(field.value);
+                      const selectedSemester = parsedSemester ? String(parsedSemester) : invalidSemesterValue;
+                      return (
+                      <Select value={selectedSemester} onValueChange={(v) => field.onChange(parseInt(v, 10))}>
                         <SelectTrigger>
-                          <SelectValue />
+                          <SelectValue
+                            placeholder={
+                              hasInvalidProfileSemester
+                                ? `Invalid DB value: ${String(rawProfileSemester)}`
+                                : 'Select semester'
+                            }
+                          />
                         </SelectTrigger>
                         <SelectContent>
+                          {hasInvalidProfileSemester && invalidSemesterValue && (
+                            <SelectItem value={invalidSemesterValue}>
+                              DB value: {invalidSemesterValue}
+                            </SelectItem>
+                          )}
                           {Array.from({ length: 8 }, (_, i) => (
                             <SelectItem key={i + 1} value={String(i + 1)}>
                               {i + 1}{['st', 'nd', 'rd', 'th', 'th', 'th', 'th', 'th'][i]} Semester
@@ -683,10 +744,16 @@ export function EditStudentPage({ studentId }: EditStudentPageProps) {
                           ))}
                         </SelectContent>
                       </Select>
-                    )}
+                    );
+                    }}
                   />
                   {errors.current_semester && (
                     <p className="text-sm text-red-500">{String(errors.current_semester.message)}</p>
+                  )}
+                  {!errors.current_semester && hasInvalidProfileSemester && (
+                    <p className="text-sm text-amber-600">
+                      Invalid DB value detected. Please choose a valid semester and save.
+                    </p>
                   )}
                 </div>
 
