@@ -17,6 +17,7 @@ export const programTypeSchema = z.string()
 export const genderTypeSchema = z.enum(['Male', 'Female', 'Other']);
 export const levelTypeSchema = z.enum(['Bachelor', 'Master']);
 export const examTypeSchema = z.enum(['Mid-Session', 'PreBoard']);
+export const studentStatusSchema = z.enum(['Active', 'Graduated', 'Dropped']);
 
 // ============================================
 // STUDENT VALIDATIONS
@@ -55,6 +56,7 @@ export const studentFormSchema = z.object({
     .int('Semester must be a whole number')
     .min(1, 'Minimum semester is 1')
     .max(8, 'Maximum semester is 8'),
+  status: studentStatusSchema.default('Active'),
   // Address
   local_address: z.string()
     .min(1, 'Local address is required')
@@ -211,7 +213,7 @@ export const studentSearchSchema = z.object({
   searchQuery: z.string().max(100).optional(),
   program: z.union([z.string().min(1), z.literal('all')]).optional().default('all'),
   semester: z.union([z.number().int().min(1).max(8), z.literal('all')]).optional().default('all'),
-  status: z.enum(['Active', 'Inactive', 'Graduated', 'Dropped', 'all']).optional().default('all'),
+  status: z.enum(['Active', 'Graduated', 'Dropped', 'all']).optional().default('all'),
 });
 
 export type StudentSearchSchema = z.infer<typeof studentSearchSchema>;

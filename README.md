@@ -68,3 +68,9 @@ npm run dev
 ```
 
 The app will show a clear error if Supabase is not configured correctly.
+
+## 6. Production Guide
+
+For production rollout checklist, CI/CD, rollback, and smoke tests, see:
+
+- `docs/PRODUCTION_DEPLOYMENT.md`

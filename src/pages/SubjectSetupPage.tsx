@@ -1,4 +1,4 @@
-import { type FormEvent, useEffect, useMemo, useState } from 'react';
+import { type FormEvent, useMemo, useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { navigateTo } from '@/lib/router';
 import {
@@ -100,16 +100,6 @@ export function SubjectSetupPage() {
   );
 
   const isSubmitting = createSubjectMutation.isPending || updateSubjectMutation.isPending;
-
-  useEffect(() => {
-    if (programOptions.length === 0) return;
-    setForm((prev) => {
-      if (prev.program && programOptions.includes(prev.program)) {
-        return prev;
-      }
-      return { ...prev, program: programOptions[0] };
-    });
-  }, [programOptions]);
 
   const handleLogout = async () => {
     await logout();
@@ -360,7 +350,7 @@ export function SubjectSetupPage() {
               <div className="space-y-2 lg:col-span-2">
                 <Label>Program</Label>
                 <Select
-                  value={form.program || undefined}
+                  value={(form.program || programOptions[0]) || undefined}
                   onValueChange={(value: ProgramType) => setForm((prev) => ({ ...prev, program: value }))}
                 >
                   <SelectTrigger className="w-full">

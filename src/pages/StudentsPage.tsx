@@ -81,7 +81,6 @@ const SEMESTER_OPTIONS = [
 const STATUS_OPTIONS = [
   { value: 'all', label: 'All Status' },
   { value: 'Active', label: 'Active' },
-  { value: 'Inactive', label: 'Inactive' },
   { value: 'Graduated', label: 'Graduated' },
   { value: 'Dropped', label: 'Dropped' },
 ];
@@ -122,7 +121,6 @@ function StudentRow({
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'Active': return 'bg-secondary/10 text-secondary border-secondary/20';
-      case 'Inactive': return 'bg-muted text-foreground border-border';
       case 'Graduated': return 'bg-primary/10 text-primary border-primary/20';
       case 'Dropped': return 'bg-red-100 text-red-700 border-red-200';
       default: return 'bg-muted text-foreground';

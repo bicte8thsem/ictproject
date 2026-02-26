@@ -139,7 +139,7 @@ export function DashboardPage() {
                 className="bg-primary hover:bg-primary/90 whitespace-nowrap"
               >
                 <Plus className="w-4 h-4 sm:mr-2" />
-                <span className="hidden sm:inline">Add Student</span>
+                <span className="hidden sm:inline">Add Students</span>
               </Button>
               <Button
                 variant="ghost"
@@ -157,7 +157,7 @@ export function DashboardPage() {
                 className="text-muted-foreground hover:text-primary whitespace-nowrap"
               >
                 <Users className="w-4 h-4 sm:mr-2" />
-                <span className="hidden sm:inline">Students</span>
+                <span className="hidden sm:inline">View Students</span>
               </Button>
               <Button
                 variant="ghost"
@@ -181,6 +181,27 @@ export function DashboardPage() {
           <p className="text-muted-foreground mt-1">
             Monitor student enrollment and academic progress
           </p>
+          <div className="mt-4 flex flex-wrap items-center gap-2">
+            <Button
+              onClick={() => navigateTo({ page: 'subject-setup' })}
+              variant="outline"
+            >
+              Subject Setup
+            </Button>
+            <Button
+              onClick={() => navigateTo({ page: 'add-student' })}
+              className="bg-primary hover:bg-primary/90"
+            >
+              Add Students
+            </Button>
+            <Button
+              onClick={() => navigateTo({ page: 'students' })}
+              variant="outline"
+            >
+              View Students
+              <ChevronRight className="w-4 h-4 ml-2" />
+            </Button>
+          </div>
         </div>
 
         {/* Summary Stats */}
@@ -320,27 +341,6 @@ export function DashboardPage() {
           </Card>
         </div>
 
-        {/* Quick Actions */}
-        <Card className="border-0 shadow-md bg-gradient-to-r from-primary to-primary/90">
-          <CardContent className="p-6">
-            <div className="flex flex-col md:flex-row items-center justify-between gap-4">
-              <div className="text-white">
-                <h3 className="text-xl font-semibold mb-1">Manage Students</h3>
-                <p className="text-primary-foreground/80 text-sm">
-                  View, add, edit student records and manage academic progress
-                </p>
-              </div>
-              <Button
-                onClick={() => navigateTo({ page: 'students' })}
-                variant="secondary"
-                className="bg-white text-primary hover:bg-primary/10"
-              >
-                View All Students
-                <ChevronRight className="w-4 h-4 ml-2" />
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
       </main>
     </div>
   );

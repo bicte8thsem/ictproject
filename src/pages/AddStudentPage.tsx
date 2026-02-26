@@ -64,6 +64,7 @@ export function AddStudentPage() {
       birthdate: '',
       program: 'BCA',
       current_semester: 1,
+      status: 'Active',
       faculty: 'Computer Science',
       level: 'Bachelor',
       local_address: '',
@@ -161,6 +162,7 @@ export function AddStudentPage() {
         residential_no: data.residential_no,
         program: data.program,
         current_semester: data.current_semester,
+        status: data.status,
       };
 
       if (photoUrl) {
@@ -404,6 +406,26 @@ export function AddStudentPage() {
                               {i + 1}{['st', 'nd', 'rd', 'th', 'th', 'th', 'th', 'th'][i]} Semester
                             </SelectItem>
                           ))}
+                        </SelectContent>
+                      </Select>
+                    )}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="status">Status *</Label>
+                  <Controller
+                    name="status"
+                    control={control}
+                    render={({ field }) => (
+                      <Select value={field.value} onValueChange={field.onChange}>
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="Active">Active</SelectItem>
+                          <SelectItem value="Dropped">Dropped</SelectItem>
+                          <SelectItem value="Graduated">Graduated</SelectItem>
                         </SelectContent>
                       </Select>
                     )}

@@ -6,7 +6,7 @@
 export type ProgramType = string;
 export type GenderType = 'Male' | 'Female' | 'Other';
 export type LevelType = 'Bachelor' | 'Master';
-export type StudentStatus = 'Active' | 'Inactive' | 'Graduated' | 'Dropped';
+export type StudentStatus = 'Active' | 'Graduated' | 'Dropped';
 export type SemesterStatus = 'Ongoing' | 'Completed' | 'Dropped';
 export type ExamType = 'Mid-Session' | 'PreBoard';
 
@@ -226,6 +226,7 @@ export interface StudentFormData {
   photo_url?: string;
   program: ProgramType;
   current_semester: number;
+  status: StudentStatus;
   
   // Address
   local_address: string;

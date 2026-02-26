@@ -82,8 +82,6 @@ export function StudentAcademicRecordsPage({ studentId }: StudentAcademicRecords
   const { data: presentationRecords = [] } = usePresentationRecords(effectiveStudentId, activeSemester);
   const { data: examRecords = [] } = useExamRecords(effectiveStudentId, activeSemester);
 
-  const activeSemesterSubjects = subjectsBySemester.get(activeSemester) ?? [];
-
   const assignmentRecordMap = useMemo(() => {
     const map = new Map<string, AssignmentRecord>();
     assignmentRecords.forEach((record) => {
@@ -144,10 +142,11 @@ export function StudentAcademicRecordsPage({ studentId }: StudentAcademicRecords
   };
 
   const printableSubjectRows = useMemo(() => {
-    const rows: Array<Subject | undefined> = [...activeSemesterSubjects];
+    const semesterSubjects = subjectsBySemester.get(activeSemester) ?? [];
+    const rows: Array<Subject | undefined> = [...semesterSubjects];
     while (rows.length < 6) rows.push(undefined);
     return rows;
-  }, [activeSemesterSubjects]);
+  }, [subjectsBySemester, activeSemester]);
 
   const handleLogout = async () => {
     await logout();

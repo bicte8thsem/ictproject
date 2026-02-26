@@ -80,13 +80,23 @@ CREATE TABLE IF NOT EXISTS students (
     photo_url TEXT,
     program program_type NOT NULL,
     current_semester INTEGER NOT NULL DEFAULT 1 CHECK (current_semester >= 1 AND current_semester <= 8),
-    status VARCHAR(20) DEFAULT 'Active' CHECK (status IN ('Active', 'Inactive', 'Graduated', 'Dropped')),
+    status VARCHAR(20) DEFAULT 'Active' CHECK (status IN ('Active', 'Graduated', 'Dropped')),
     created_at TIMESTAMPTZ DEFAULT NOW(),
     updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
 -- Ensure new columns exist in already-created databases
 ALTER TABLE students ADD COLUMN IF NOT EXISTS photo_url TEXT;
+
+-- Normalize legacy status values and enforce current allowed values
+UPDATE students
+SET status = 'Dropped'
+WHERE status = 'Inactive';
+
+ALTER TABLE students DROP CONSTRAINT IF EXISTS students_status_check;
+ALTER TABLE students
+    ADD CONSTRAINT students_status_check
+    CHECK (status IN ('Active', 'Graduated', 'Dropped'));
 
 CREATE INDEX IF NOT EXISTS idx_students_program ON students(program);
 CREATE INDEX IF NOT EXISTS idx_students_current_semester ON students(current_semester);

@@ -47,6 +47,9 @@ interface EditStudentPageProps {
   studentId: string;
 }
 
+const STUDENT_STATUSES = ['Active', 'Dropped', 'Graduated'] as const;
+type AllowedStudentStatus = typeof STUDENT_STATUSES[number];
+
 function isProfileData(data: unknown): data is {
   student: {
     id: string;
@@ -65,6 +68,7 @@ function isProfileData(data: unknown): data is {
     photo_url?: string;
     program: ProgramType;
     current_semester: number;
+    status?: string;
   };
   address?: {
     local_address: string;
@@ -137,6 +141,7 @@ export function EditStudentPage({ studentId }: EditStudentPageProps) {
       name: '',
       gender: 'Male',
       birthdate: '',
+      status: 'Active',
       faculty: 'Computer Science',
       level: 'Bachelor',
       local_address: '',
@@ -185,6 +190,14 @@ export function EditStudentPage({ studentId }: EditStudentPageProps) {
     return rounded;
   };
 
+  const parseStudentStatus = (value: unknown): AllowedStudentStatus | undefined => {
+    const normalized = String(value ?? '').trim().toLowerCase();
+    if (normalized === 'active') return 'Active';
+    if (normalized === 'dropped') return 'Dropped';
+    if (normalized === 'graduated') return 'Graduated';
+    return undefined;
+  };
+
   const selectedProgram = watch('program');
 
   useEffect(() => {
@@ -199,12 +212,15 @@ export function EditStudentPage({ studentId }: EditStudentPageProps) {
   const rawProfileGender = profileStudent?.gender;
   const rawProfileProgram = profileStudent?.program;
   const rawProfileSemester = profileStudent?.current_semester;
+  const rawProfileStatus = profileStudent?.status;
   const hasInvalidProfileGender = rawProfileGender != null && !parseGender(rawProfileGender);
   const hasInvalidProfileProgram = rawProfileProgram != null && !parseProgram(rawProfileProgram);
   const hasInvalidProfileSemester = rawProfileSemester != null && !parseSemester(rawProfileSemester);
+  const hasInvalidProfileStatus = rawProfileStatus != null && !parseStudentStatus(rawProfileStatus);
   const invalidGenderValue = hasInvalidProfileGender ? String(rawProfileGender) : undefined;
   const invalidProgramValue = hasInvalidProfileProgram ? String(rawProfileProgram) : undefined;
   const invalidSemesterValue = hasInvalidProfileSemester ? String(rawProfileSemester) : undefined;
+  const invalidStatusValue = hasInvalidProfileStatus ? String(rawProfileStatus) : undefined;
 
   // Populate form with existing data
   useEffect(() => {
@@ -213,6 +229,7 @@ export function EditStudentPage({ studentId }: EditStudentPageProps) {
       const parsedGender = parseGender(student.gender);
       const parsedProgram = parseProgram(student.program);
       const parsedSemester = parseSemester(student.current_semester);
+      const parsedStatus = parseStudentStatus(student.status);
       reset({
         college_enrollment_no: student.college_enrollment_no,
         name: student.name,
@@ -228,6 +245,7 @@ export function EditStudentPage({ studentId }: EditStudentPageProps) {
         residential_no: student.residential_no || '',
         program: parsedProgram,
         current_semester: parsedSemester,
+        status: parsedStatus,
         local_address: address?.local_address || '',
         district: address?.district || '',
         state: address?.state || '',
@@ -393,6 +411,7 @@ export function EditStudentPage({ studentId }: EditStudentPageProps) {
         residential_no: data.residential_no,
         program: data.program,
         current_semester: data.current_semester,
+        status: data.status,
       };
 
       // Keep old flow compatible: only send photo field when relevant.
@@ -801,6 +820,56 @@ export function EditStudentPage({ studentId }: EditStudentPageProps) {
                   {!errors.current_semester && hasInvalidProfileSemester && (
                     <p className="text-sm text-amber-600">
                       Invalid DB value detected. Please choose a valid semester and save.
+                    </p>
+                  )}
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="status">Status *</Label>
+                  <Controller
+                    name="status"
+                    control={control}
+                    render={({ field }) => {
+                      const selectedStatus =
+                        parseStudentStatus(field.value) ??
+                        parseStudentStatus(rawProfileStatus) ??
+                        invalidStatusValue;
+                      return (
+                        <Select
+                          value={selectedStatus}
+                          onValueChange={field.onChange}
+                        >
+                          <SelectTrigger>
+                            <SelectValue
+                              placeholder={
+                                hasInvalidProfileStatus
+                                  ? `Invalid DB value: ${String(rawProfileStatus)}`
+                                  : 'Select status'
+                              }
+                            />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {hasInvalidProfileStatus && invalidStatusValue && (
+                              <SelectItem value={invalidStatusValue}>
+                                DB value: {invalidStatusValue}
+                              </SelectItem>
+                            )}
+                            {STUDENT_STATUSES.map((statusValue) => (
+                              <SelectItem key={statusValue} value={statusValue}>
+                                {statusValue}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      );
+                    }}
+                  />
+                  {errors.status && (
+                    <p className="text-sm text-red-500">{String(errors.status.message)}</p>
+                  )}
+                  {!errors.status && hasInvalidProfileStatus && (
+                    <p className="text-sm text-amber-600">
+                      Invalid DB value detected. Please choose a valid status and save.
                     </p>
                   )}
                 </div>
