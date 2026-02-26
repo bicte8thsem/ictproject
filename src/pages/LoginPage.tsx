@@ -151,6 +151,19 @@ export function LoginPage() {
             </form>
           </CardContent>
         </Card>
+
+        <p className="mt-5 text-center text-sm text-muted-foreground">
+          Developed by:{' '}
+          <a
+            href="https://www.dikshitaphuyal.com.np/"
+            target="_blank"
+            rel="noreferrer"
+            className="underline hover:text-foreground"
+          >
+            Dixit Phuyal
+          </a>{' '}
+          &amp; Sabita GC
+        </p>
       </div>
     </div>
   );

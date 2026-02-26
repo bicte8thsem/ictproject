@@ -11,6 +11,7 @@ import { Component, lazy, Suspense, type ReactNode } from 'react';
 
 const LoginPage = lazy(() => import('@/pages/LoginPage').then((m) => ({ default: m.LoginPage })));
 const DashboardPage = lazy(() => import('@/pages/DashboardPage').then((m) => ({ default: m.DashboardPage })));
+const SubjectSetupPage = lazy(() => import('@/pages/SubjectSetupPage').then((m) => ({ default: m.SubjectSetupPage })));
 const StudentsPage = lazy(() => import('@/pages/StudentsPage').then((m) => ({ default: m.StudentsPage })));
 const StudentProfilePage = lazy(() => import('@/pages/StudentProfilePage').then((m) => ({ default: m.StudentProfilePage })));
 const StudentAcademicRecordsPage = lazy(() =>
@@ -128,6 +129,7 @@ function Router() {
     <Suspense fallback={pageLoadingFallback}>
       {route.page === 'login' && <LoginPage />}
       {route.page === 'dashboard' && <DashboardPage />}
+      {route.page === 'subject-setup' && <SubjectSetupPage />}
       {route.page === 'students' && <StudentsPage />}
       {route.page === 'student-profile' && <StudentProfilePage studentId={route.studentId} />}
       {route.page === 'student-academic-records' && <StudentAcademicRecordsPage studentId={route.studentId} />}

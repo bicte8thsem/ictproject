@@ -8,7 +8,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { MAX_STUDENT_PHOTO_SIZE_BYTES, studentFormSchema } from '@/lib/validations';
 import { useAuth } from '@/contexts/AuthContext';
 import { navigateTo } from '@/lib/router';
-import { useStudentIdBySlug, useStudentProfile, useUpdateStudent } from '@/hooks/useApi';
+import { useProgramOptions, useStudentIdBySlug, useStudentProfile, useUpdateStudent } from '@/hooks/useApi';
 import { useAutoHideHeader } from '@/hooks/useAutoHideHeader';
 import { uploadStudentPhoto } from '@/lib/api';
 import { isUuid } from '@/lib/slug';
@@ -26,6 +26,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Skeleton } from '@/components/ui/skeleton';
+import type { ProgramType } from '@/types';
 import { 
   LogOut, 
   User,
@@ -62,7 +63,7 @@ function isProfileData(data: unknown): data is {
     email_id?: string;
     residential_no?: string;
     photo_url?: string;
-    program: 'BCA' | 'BICTE';
+    program: ProgramType;
     current_semester: number;
   };
   address?: {
@@ -110,6 +111,7 @@ export function EditStudentPage({ studentId }: EditStudentPageProps) {
     isLoading: isProfileLoading,
     isError: isProfileError,
   } = useStudentProfile(effectiveStudentId);
+  const { data: programOptions = ['BCA', 'BICTE'] } = useProgramOptions();
   const updateStudent = useUpdateStudent();
   const isLoading = isProfileLoading || (!isDirectUuid && isResolvingStudentId);
   const isHeaderVisible = useAutoHideHeader();
@@ -126,6 +128,7 @@ export function EditStudentPage({ studentId }: EditStudentPageProps) {
     handleSubmit,
     reset,
     setError,
+    watch,
     formState: { errors, isSubmitting },
   } = useForm({
     resolver: zodResolver(studentFormSchema),
@@ -160,9 +163,9 @@ export function EditStudentPage({ studentId }: EditStudentPageProps) {
     return isValid ? normalized : '';
   };
 
-  const parseProgram = (value: unknown): 'BCA' | 'BICTE' | undefined => {
-    const normalized = String(value ?? '').trim().toUpperCase();
-    if (normalized === 'BCA' || normalized === 'BICTE') return normalized;
+  const parseProgram = (value: unknown): ProgramType | undefined => {
+    const normalized = String(value ?? '').trim();
+    if (normalized.length > 0) return normalized;
     return undefined;
   };
 
@@ -181,6 +184,16 @@ export function EditStudentPage({ studentId }: EditStudentPageProps) {
     if (rounded < 1 || rounded > 8) return undefined;
     return rounded;
   };
+
+  const selectedProgram = watch('program');
+
+  useEffect(() => {
+    const selected = parseProgram(selectedProgram);
+    if (!selected && programOptions.length > 0) {
+      const fallback = programOptions[0];
+      setProgramSelectValue(fallback);
+    }
+  }, [programOptions, selectedProgram]);
 
   const profileStudent = isProfileData(profile) ? profile.student : undefined;
   const rawProfileGender = profileStudent?.gender;
@@ -718,8 +731,11 @@ export function EditStudentPage({ studentId }: EditStudentPageProps) {
                               DB value: {invalidProgramValue}
                             </SelectItem>
                           )}
-                          <SelectItem value="BCA">BCA</SelectItem>
-                          <SelectItem value="BICTE">BICTE</SelectItem>
+                          {programOptions.map((programName) => (
+                            <SelectItem key={programName} value={programName}>
+                              {programName}
+                            </SelectItem>
+                          ))}
                         </SelectContent>
                       </Select>
                     );
@@ -968,6 +984,7 @@ export function EditStudentPage({ studentId }: EditStudentPageProps) {
                     <Input 
                       id="slc_passed_year" 
                       type="number"
+                      step="1"
                       {...register('slc_passed_year', { setValueAs: optionalNumber })} 
                     />
                   </div>
@@ -980,7 +997,7 @@ export function EditStudentPage({ studentId }: EditStudentPageProps) {
                     <Input 
                       id="slc_gpa" 
                       type="number"
-                      step="0.01"
+                      step="any"
                       min="0"
                       max="4"
                       {...register('slc_gpa', { setValueAs: optionalNumber })} 
@@ -1000,6 +1017,7 @@ export function EditStudentPage({ studentId }: EditStudentPageProps) {
                     <Input 
                       id="hs_passed_year" 
                       type="number"
+                      step="1"
                       {...register('hs_passed_year', { setValueAs: optionalNumber })} 
                     />
                   </div>
@@ -1012,7 +1030,7 @@ export function EditStudentPage({ studentId }: EditStudentPageProps) {
                     <Input 
                       id="hs_gpa" 
                       type="number"
-                      step="0.01"
+                      step="any"
                       min="0"
                       max="4"
                       {...register('hs_gpa', { setValueAs: optionalNumber })} 
@@ -1020,7 +1038,11 @@ export function EditStudentPage({ studentId }: EditStudentPageProps) {
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="major_subject">Major Subject</Label>
-                    <Input id="major_subject" {...register('major_subject')} />
+                    <Input
+                      id="major_subject"
+                      {...register('major_subject')}
+                      placeholder="Enter major subject"
+                    />
                   </div>
                 </div>
               </div>

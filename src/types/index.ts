@@ -3,7 +3,7 @@
 // ============================================
 
 // Enums
-export type ProgramType = 'BCA' | 'BICTE';
+export type ProgramType = string;
 export type GenderType = 'Male' | 'Female' | 'Other';
 export type LevelType = 'Bachelor' | 'Master';
 export type StudentStatus = 'Active' | 'Inactive' | 'Graduated' | 'Dropped';
@@ -88,6 +88,7 @@ export interface Subject {
   id: string;
   code: string;
   name: string;
+  subject_team?: string;
   program: ProgramType;
   semester: number;
   credit_hours?: number;

@@ -98,13 +98,22 @@ export function SemesterAcademicRecords({
   } = useForm<FormData>();
 
   useEffect(() => {
+    const subject = editingRecord?.subjectId
+      ? subjects.find((item) => item.id === editingRecord.subjectId)
+      : undefined;
+    const defaultSignature = subject?.subject_team?.trim() || '';
+
     if (editingRecord?.record) {
       const record = editingRecord.record;
+      const recordSignature =
+        typeof record.signature === 'string' && record.signature.trim().length > 0
+          ? record.signature
+          : undefined;
       reset({
         due_date: (record as AssignmentRecord).due_date ?? '',
         submitted_date: (record as AssignmentRecord).submitted_date ?? '',
         evaluation: record.evaluation ?? undefined,
-        signature: record.signature ?? '',
+        signature: defaultSignature || recordSignature || '',
         remarks: record.remarks ?? '',
         topic: (record as PresentationRecord).topic ?? '',
         presented_date: (record as PresentationRecord).presented_date ?? '',
@@ -114,9 +123,11 @@ export function SemesterAcademicRecords({
         viva_marks: (record as ExamRecord).viva_marks ?? undefined,
       });
     } else {
-      reset({});
+      reset({
+        signature: defaultSignature,
+      });
     }
-  }, [editingRecord, reset]);
+  }, [editingRecord, reset, subjects]);
 
   const getAssignmentRecord = (subjectId: string, assignmentNumber: number): AssignmentRecord | undefined => {
     return assignmentRecords?.find(
@@ -136,11 +147,13 @@ export function SemesterAcademicRecords({
     if (!editingRecord) return;
 
     try {
+      const subject = subjects.find((item) => item.id === editingRecord.subjectId);
+      const subjectSignature = subject?.subject_team?.trim();
       const baseData = {
         student_id: studentId,
         subject_id: editingRecord.subjectId,
         semester,
-        signature: toOptionalString(data.signature),
+        signature: toOptionalString(data.signature) ?? (subjectSignature || undefined),
         remarks: toOptionalString(data.remarks),
       };
 
@@ -219,6 +232,9 @@ export function SemesterAcademicRecords({
             </p>
             <p className="text-sm text-muted-foreground">Subject</p>
             <p className="font-medium text-foreground">{subject?.code}: {subject?.name}</p>
+            {subject?.subject_team && (
+              <p className="text-xs text-muted-foreground mt-1">Teacher: {subject.subject_team}</p>
+            )}
           </div>
 
           <ScrollArea className="max-h-[60vh]">
@@ -347,6 +363,11 @@ export function SemesterAcademicRecords({
 
   return (
     <div className="space-y-6">
+      {subjects.length === 0 && (
+        <div className="rounded-md border bg-muted/20 p-4 text-sm text-muted-foreground">
+          No subjects are configured for this semester yet. Ask admin to set up subjects first.
+        </div>
+      )}
       <Tabs defaultValue="assignments" className="w-full">
         <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="assignments" className="text-xs sm:text-sm">
@@ -368,15 +389,15 @@ export function SemesterAcademicRecords({
         </TabsList>
 
         {/* Assignments Tab */}
-        <TabsContent value="assignments">
-          <div className="rounded-md border bg-card overflow-hidden">
+        <TabsContent value="assignments" className="mt-4">
+          <div className="rounded-md border bg-card overflow-hidden min-h-[420px]">
             <div className="px-4 py-3 border-b">
               <h3 className="text-lg font-semibold flex items-center gap-2">
                 <FileText className="w-5 h-5 text-primary" />
                 Assignment Records
               </h3>
             </div>
-            <div className="overflow-x-auto">
+            <div className="overflow-x-auto min-h-[340px]">
               <Table>
                 <TableHeader>
                   <TableRow className="bg-background">
@@ -398,6 +419,9 @@ export function SemesterAcademicRecords({
                           <div>
                             <p className="font-medium text-foreground">{subject.name}</p>
                             <p className="text-xs text-muted-foreground">{subject.code}</p>
+                            {subject.subject_team && (
+                              <p className="text-xs text-muted-foreground">Teacher: {subject.subject_team}</p>
+                            )}
                           </div>
                         </TableCell>
                         <TableCell className="text-center">
@@ -442,15 +466,15 @@ export function SemesterAcademicRecords({
         </TabsContent>
 
         {/* Presentations Tab */}
-        <TabsContent value="presentations">
-          <div className="rounded-md border bg-card overflow-hidden">
+        <TabsContent value="presentations" className="mt-4">
+          <div className="rounded-md border bg-card overflow-hidden min-h-[420px]">
             <div className="px-4 py-3 border-b">
               <h3 className="text-lg font-semibold flex items-center gap-2">
                 <Presentation className="w-5 h-5 text-primary" />
                 Presentation Records
               </h3>
             </div>
-            <div className="overflow-x-auto">
+            <div className="overflow-x-auto min-h-[340px]">
               <Table>
                 <TableHeader>
                   <TableRow className="bg-background">
@@ -473,6 +497,9 @@ export function SemesterAcademicRecords({
                           <div>
                             <p className="font-medium text-foreground">{subject.name}</p>
                             <p className="text-xs text-muted-foreground">{subject.code}</p>
+                            {subject.subject_team && (
+                              <p className="text-xs text-muted-foreground">Teacher: {subject.subject_team}</p>
+                            )}
                           </div>
                         </TableCell>
                         <TableCell className="text-muted-foreground">{record?.topic || '-'}</TableCell>
@@ -503,15 +530,15 @@ export function SemesterAcademicRecords({
         </TabsContent>
 
         {/* Mid-Session Tab */}
-        <TabsContent value="mid-session">
-          <div className="rounded-md border bg-card overflow-hidden">
+        <TabsContent value="mid-session" className="mt-4">
+          <div className="rounded-md border bg-card overflow-hidden min-h-[420px]">
             <div className="px-4 py-3 border-b">
               <h3 className="text-lg font-semibold flex items-center gap-2">
                 <ClipboardList className="w-5 h-5 text-secondary" />
                 Mid-Session Examination
               </h3>
             </div>
-            <div className="overflow-x-auto">
+            <div className="overflow-x-auto min-h-[340px]">
               <Table>
                 <TableHeader>
                   <TableRow className="bg-background">
@@ -535,6 +562,9 @@ export function SemesterAcademicRecords({
                           <div>
                             <p className="font-medium text-foreground">{subject.name}</p>
                             <p className="text-xs text-muted-foreground">{subject.code}</p>
+                            {subject.subject_team && (
+                              <p className="text-xs text-muted-foreground">Teacher: {subject.subject_team}</p>
+                            )}
                           </div>
                         </TableCell>
                         <TableCell className="text-muted-foreground">{record?.exam_date || '-'}</TableCell>
@@ -564,15 +594,15 @@ export function SemesterAcademicRecords({
         </TabsContent>
 
         {/* PreBoard Tab */}
-        <TabsContent value="preboard">
-          <div className="rounded-md border bg-card overflow-hidden">
+        <TabsContent value="preboard" className="mt-4">
+          <div className="rounded-md border bg-card overflow-hidden min-h-[420px]">
             <div className="px-4 py-3 border-b">
               <h3 className="text-lg font-semibold flex items-center gap-2">
                 <CheckCircle className="w-5 h-5 text-orange-600" />
                 PreBoard Examination
               </h3>
             </div>
-            <div className="overflow-x-auto">
+            <div className="overflow-x-auto min-h-[340px]">
               <Table>
                 <TableHeader>
                   <TableRow className="bg-background">
@@ -596,6 +626,9 @@ export function SemesterAcademicRecords({
                           <div>
                             <p className="font-medium text-foreground">{subject.name}</p>
                             <p className="text-xs text-muted-foreground">{subject.code}</p>
+                            {subject.subject_team && (
+                              <p className="text-xs text-muted-foreground">Teacher: {subject.subject_team}</p>
+                            )}
                           </div>
                         </TableCell>
                         <TableCell className="text-muted-foreground">{record?.exam_date || '-'}</TableCell>

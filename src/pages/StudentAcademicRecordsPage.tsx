@@ -130,6 +130,19 @@ export function StudentAcademicRecordsPage({ studentId }: StudentAcademicRecords
     return Number.isInteger(value) ? String(value) : value.toFixed(2);
   };
 
+  const formatSubject = (subject?: Subject) => {
+    if (!subject) return '';
+    const team = subject.subject_team?.trim();
+    return team ? `${subject.code}: ${subject.name} (${team})` : `${subject.code}: ${subject.name}`;
+  };
+
+  const getPreferredSignature = (subject?: Subject, savedSignature?: string | null) => {
+    const team = subject?.subject_team?.trim();
+    if (team) return team;
+    const signature = typeof savedSignature === 'string' ? savedSignature.trim() : '';
+    return signature;
+  };
+
   const printableSubjectRows = useMemo(() => {
     const rows: Array<Subject | undefined> = [...activeSemesterSubjects];
     while (rows.length < 6) rows.push(undefined);
@@ -223,6 +236,14 @@ export function StudentAcademicRecordsPage({ studentId }: StudentAcademicRecords
               >
                 <Plus className="w-4 h-4 sm:mr-2" />
                 <span className="hidden sm:inline">Add Student</span>
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => navigateTo({ page: 'subject-setup' })}
+              >
+                <BookOpen className="w-4 h-4 sm:mr-2" />
+                <span className="hidden sm:inline">Subject Setup</span>
               </Button>
               <Button
                 variant="outline"
@@ -367,11 +388,11 @@ export function StudentAcademicRecordsPage({ studentId }: StudentAcademicRecords
                 return (
                   <tr key={`print-assignment-1-${subject?.id ?? index}`}>
                     <td>{index + 1}</td>
-                    <td>{subject ? `${subject.code}: ${subject.name}` : ''}</td>
+                    <td>{formatSubject(subject)}</td>
                     <td>{formatDate(a1?.due_date)}</td>
                     <td>{formatDate(a1?.submitted_date)}</td>
                     <td>{formatNumber(a1?.evaluation)}</td>
-                    <td>{formatCell(a1?.signature)}</td>
+                    <td>{formatCell(getPreferredSignature(subject, a1?.signature))}</td>
                     <td>{formatCell(a1?.remarks)}</td>
                   </tr>
                 );
@@ -398,11 +419,11 @@ export function StudentAcademicRecordsPage({ studentId }: StudentAcademicRecords
                 return (
                   <tr key={`print-assignment-2-${subject?.id ?? index}`}>
                     <td>{index + 1}</td>
-                    <td>{subject ? `${subject.code}: ${subject.name}` : ''}</td>
+                    <td>{formatSubject(subject)}</td>
                     <td>{formatDate(a2?.due_date)}</td>
                     <td>{formatDate(a2?.submitted_date)}</td>
                     <td>{formatNumber(a2?.evaluation)}</td>
-                    <td>{formatCell(a2?.signature)}</td>
+                    <td>{formatCell(getPreferredSignature(subject, a2?.signature))}</td>
                     <td>{formatCell(a2?.remarks)}</td>
                   </tr>
                 );
@@ -429,11 +450,11 @@ export function StudentAcademicRecordsPage({ studentId }: StudentAcademicRecords
                 return (
                   <tr key={`print-presentation-${subject?.id ?? index}`}>
                     <td>{index + 1}</td>
-                    <td>{subject ? `${subject.code}: ${subject.name}` : ''}</td>
+                    <td>{formatSubject(subject)}</td>
                     <td>{formatCell(record?.topic)}</td>
                     <td>{formatDate(record?.presented_date)}</td>
                     <td>{formatNumber(record?.evaluation)}</td>
-                    <td>{formatCell(record?.signature)}</td>
+                    <td>{formatCell(getPreferredSignature(subject, record?.signature))}</td>
                     <td>{formatCell(record?.remarks)}</td>
                   </tr>
                 );
@@ -461,12 +482,12 @@ export function StudentAcademicRecordsPage({ studentId }: StudentAcademicRecords
                 return (
                   <tr key={`print-exam-mid-${subject?.id ?? index}`}>
                     <td>{index + 1}</td>
-                    <td>{subject ? `${subject.code}: ${subject.name}` : ''}</td>
+                    <td>{formatSubject(subject)}</td>
                     <td>{formatDate(mid?.exam_date)}</td>
                     <td>{formatNumber(mid?.internal_marks)}</td>
                     <td>{formatNumber(mid?.practical_marks)}</td>
                     <td>{formatNumber(mid?.viva_marks)}</td>
-                    <td>{formatCell(mid?.signature)}</td>
+                    <td>{formatCell(getPreferredSignature(subject, mid?.signature))}</td>
                     <td>{formatCell(mid?.remarks)}</td>
                   </tr>
                 );
@@ -494,12 +515,12 @@ export function StudentAcademicRecordsPage({ studentId }: StudentAcademicRecords
                 return (
                   <tr key={`print-exam-pre-${subject?.id ?? index}`}>
                     <td>{index + 1}</td>
-                    <td>{subject ? `${subject.code}: ${subject.name}` : ''}</td>
+                    <td>{formatSubject(subject)}</td>
                     <td>{formatDate(pre?.exam_date)}</td>
                     <td>{formatNumber(pre?.internal_marks)}</td>
                     <td>{formatNumber(pre?.practical_marks)}</td>
                     <td>{formatNumber(pre?.viva_marks)}</td>
-                    <td>{formatCell(pre?.signature)}</td>
+                    <td>{formatCell(getPreferredSignature(subject, pre?.signature))}</td>
                     <td>{formatCell(pre?.remarks)}</td>
                   </tr>
                 );

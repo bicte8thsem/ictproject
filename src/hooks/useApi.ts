@@ -19,12 +19,14 @@ import * as api from '@/lib/api';
 
 export const queryKeys = {
   dashboard: ['dashboard'] as const,
+  programDistribution: ['dashboard', 'program-distribution'] as const,
   students: ['students'] as const,
   student: (id: string) => ['students', id] as const,
   studentSlug: (slug: string) => ['students', 'slug', slug] as const,
   studentProfile: (id: string) => ['students', id, 'profile'] as const,
   subjects: (program: ProgramType, semester: number) => ['subjects', program, semester] as const,
   allSubjects: ['subjects', 'all'] as const,
+  programs: ['subjects', 'programs'] as const,
   semesterRecords: (studentId: string, semester: number) => 
     ['semesterRecords', studentId, semester] as const,
   assignmentRecords: (studentId: string, semester: number) => 
@@ -44,6 +46,14 @@ export function useDashboardStats() {
     queryKey: queryKeys.dashboard,
     queryFn: api.getDashboardStats,
     staleTime: 5 * 60 * 1000, // 5 minutes
+  });
+}
+
+export function useProgramDistribution() {
+  return useQuery<api.ProgramDistributionItem[]>({
+    queryKey: queryKeys.programDistribution,
+    queryFn: api.getProgramDistribution,
+    staleTime: 5 * 60 * 1000,
   });
 }
 
@@ -92,6 +102,7 @@ export function useCreateStudent() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.students });
       queryClient.invalidateQueries({ queryKey: queryKeys.dashboard });
+      queryClient.invalidateQueries({ queryKey: queryKeys.programDistribution });
     },
   });
 }
@@ -115,6 +126,7 @@ export function useUpdateStudent(defaultId?: string) {
         queryClient.invalidateQueries({ queryKey: queryKeys.studentProfile(targetId) });
       }
       queryClient.invalidateQueries({ queryKey: queryKeys.dashboard });
+      queryClient.invalidateQueries({ queryKey: queryKeys.programDistribution });
     },
   });
 }
@@ -127,6 +139,7 @@ export function useDeleteStudent() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.students });
       queryClient.invalidateQueries({ queryKey: queryKeys.dashboard });
+      queryClient.invalidateQueries({ queryKey: queryKeys.programDistribution });
     },
   });
 }
@@ -149,6 +162,74 @@ export function useAllSubjects() {
     queryKey: queryKeys.allSubjects,
     queryFn: api.getAllSubjects,
     staleTime: 10 * 60 * 1000,
+  });
+}
+
+export function useProgramOptions() {
+  return useQuery<ProgramType[]>({
+    queryKey: queryKeys.programs,
+    queryFn: api.getProgramOptions,
+    staleTime: 10 * 60 * 1000,
+  });
+}
+
+export function useCreateProgramOption() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (name: string) => api.createProgramOption(name),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.programs });
+      queryClient.invalidateQueries({ queryKey: ['subjects'] });
+    },
+  });
+}
+
+export function useDeleteProgramOption() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (name: string) => api.deleteProgramOption(name),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.programs });
+      queryClient.invalidateQueries({ queryKey: ['subjects'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.students });
+      queryClient.invalidateQueries({ queryKey: queryKeys.dashboard });
+    },
+  });
+}
+
+export function useCreateSubject() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (data: api.SubjectMutationPayload) => api.createSubject(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['subjects'] });
+    },
+  });
+}
+
+export function useUpdateSubject() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ id, data }: { id: string; data: api.SubjectMutationPayload }) =>
+      api.updateSubject(id, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['subjects'] });
+    },
+  });
+}
+
+export function useDeleteSubject() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (id: string) => api.deleteSubject(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['subjects'] });
+    },
   });
 }
 

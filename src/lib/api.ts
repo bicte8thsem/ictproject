@@ -30,6 +30,25 @@ export interface StudentsQueryResult {
   total: number;
 }
 
+export interface SubjectMutationPayload {
+  code: string;
+  name: string;
+  subject_team?: string;
+  program: ProgramType;
+  semester: number;
+  credit_hours?: number;
+  is_elective?: boolean;
+}
+
+export interface ProgramOption {
+  name: ProgramType;
+}
+
+export interface ProgramDistributionItem {
+  name: ProgramType;
+  value: number;
+}
+
 function escapeIlike(input: string): string {
   return input.replace(/[%_\\]/g, '\\$&');
 }
@@ -46,6 +65,26 @@ export async function getDashboardStats(): Promise<DashboardStats> {
   
   if (error) throw error;
   return data as unknown as DashboardStats;
+}
+
+export async function getProgramDistribution(): Promise<ProgramDistributionItem[]> {
+  const { data, error } = await supabase
+    .from('students')
+    .select('program')
+    .eq('status', 'Active');
+
+  if (error) throw error;
+
+  const counts = new Map<string, number>();
+  (data || []).forEach((row) => {
+    const program = String((row as { program?: unknown }).program || '').trim();
+    if (!program) return;
+    counts.set(program, (counts.get(program) || 0) + 1);
+  });
+
+  return Array.from(counts.entries())
+    .map(([name, value]) => ({ name, value }))
+    .sort((a, b) => b.value - a.value);
 }
 
 // ============================================
@@ -329,6 +368,122 @@ export async function getAllSubjects(): Promise<Subject[]> {
   
   if (error) throw error;
   return (data || []) as Subject[];
+}
+
+export async function getProgramOptions(): Promise<ProgramType[]> {
+  const { data, error } = await supabase
+    .from('programs')
+    .select('name')
+    .order('name');
+
+  if (!error) {
+    const names = Array.from(
+      new Set(
+        (data || [])
+          .map((row) => String((row as { name?: unknown }).name || '').trim())
+          .filter(Boolean)
+      )
+    );
+    return names.length > 0 ? names : ['BCA', 'BICTE'];
+  }
+
+  const code = (error as { code?: string }).code;
+  if (code !== '42P01' && code !== 'PGRST205') {
+    throw error;
+  }
+
+  const { data: subjectData, error: subjectError } = await supabase
+    .from('subjects')
+    .select('program');
+
+  if (subjectError) throw subjectError;
+
+  const subjectPrograms = Array.from(
+    new Set(
+      (subjectData || [])
+        .map((row) => String((row as { program?: unknown }).program || '').trim())
+        .filter(Boolean)
+    )
+  );
+
+  return subjectPrograms.length > 0 ? subjectPrograms : ['BCA', 'BICTE'];
+}
+
+export async function createProgramOption(name: string): Promise<ProgramOption> {
+  const normalizedName = name.trim().toUpperCase();
+  if (!normalizedName) {
+    throw new Error('Program name is required');
+  }
+
+  const { data, error } = await supabase
+    .rpc('add_program_type', { p_program_name: normalizedName });
+
+  if (error) throw error;
+  return { name: String(data || normalizedName) };
+}
+
+export async function deleteProgramOption(name: string): Promise<void> {
+  const normalizedName = name.trim().toUpperCase();
+  if (!normalizedName) {
+    throw new Error('Program name is required');
+  }
+
+  const { error } = await supabase
+    .rpc('delete_program_type', { p_program_name: normalizedName });
+
+  if (error) throw error;
+}
+
+export async function createSubject(payload: SubjectMutationPayload): Promise<Subject> {
+  const dataToInsert = {
+    code: payload.code.trim(),
+    name: payload.name.trim(),
+    subject_team: payload.subject_team?.trim() || null,
+    program: payload.program,
+    semester: payload.semester,
+    credit_hours: payload.credit_hours ?? 3,
+    is_elective: payload.is_elective ?? false,
+  };
+
+  const { data, error } = await supabase
+    .from('subjects')
+    .insert(dataToInsert)
+    .select()
+    .single();
+
+  if (error) throw error;
+  return data as Subject;
+}
+
+export async function updateSubject(id: string, payload: SubjectMutationPayload): Promise<Subject> {
+  const dataToUpdate = {
+    code: payload.code.trim(),
+    name: payload.name.trim(),
+    subject_team: payload.subject_team?.trim() || null,
+    program: payload.program,
+    semester: payload.semester,
+    credit_hours: payload.credit_hours ?? 3,
+    is_elective: payload.is_elective ?? false,
+  };
+
+  const { data, error } = await supabase
+    .from('subjects')
+    .update(dataToUpdate)
+    .eq('id', id)
+    .select()
+    .single();
+
+  if (error) throw error;
+  return data as Subject;
+}
+
+export async function deleteSubject(id: string): Promise<void> {
+  const { error } = await supabase
+    .from('subjects')
+    .delete()
+    .eq('id', id);
+
+  if (error) throw error;
 }
 
 // ============================================

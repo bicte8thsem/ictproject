@@ -4,7 +4,7 @@
 
 import { useAuth } from '@/contexts/AuthContext';
 import { navigateTo } from '@/lib/router';
-import { useDashboardStats } from '@/hooks/useApi';
+import { useDashboardStats, useProgramDistribution, useProgramOptions } from '@/hooks/useApi';
 import { useAutoHideHeader } from '@/hooks/useAutoHideHeader';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -80,6 +80,8 @@ function StatCard({
 export function DashboardPage() {
   const { logout } = useAuth();
   const { data: stats, isLoading } = useDashboardStats();
+  const { data: programData = [], isLoading: isProgramLoading } = useProgramDistribution();
+  const { data: programOptions = [] } = useProgramOptions();
   const isHeaderVisible = useAutoHideHeader();
 
   const handleLogout = async () => {
@@ -87,11 +89,7 @@ export function DashboardPage() {
     navigateTo({ page: 'login' });
   };
 
-  // Prepare chart data
-  const programData = stats ? [
-    { name: 'BCA', value: stats.total_bca_students },
-    { name: 'BICTE', value: stats.total_bicte_students },
-  ] : [];
+  const isDashboardLoading = isLoading || isProgramLoading;
 
   const semesterData = stats ? [
     { name: '1st', students: stats.semester_1_students },
@@ -103,14 +101,19 @@ export function DashboardPage() {
     { name: '7th', students: stats.semester_7_students },
     { name: '8th', students: stats.semester_8_students },
   ] : [];
+  const programCountMap = new Map(programData.map((item) => [item.name, item.value]));
+  const programSummaryRows = programOptions.map((programName) => ({
+    name: programName,
+    students: programCountMap.get(programName) || 0,
+  }));
 
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
       <header className={`bg-white border-b border-border sticky top-0 z-30 transition-transform duration-300 ${isHeaderVisible ? 'translate-y-0' : '-translate-y-full'}`}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 sm:grid-cols-3 items-center gap-3 py-3 sm:py-0 sm:h-20">
-            <div className="flex justify-center sm:justify-start">
+          <div className="flex flex-col gap-3 py-3 sm:flex-row sm:items-center sm:justify-between sm:h-20 sm:py-0">
+            <div className="flex items-center gap-3 min-w-0">
               <button
                 type="button"
                 onClick={() => navigateTo({ page: 'dashboard' })}
@@ -119,21 +122,21 @@ export function DashboardPage() {
               >
                 <img src={logo} alt="Logo" className="h-14 sm:h-16 w-auto" />
               </button>
+              <div className="min-w-0">
+                <p className="text-sm sm:text-base font-semibold text-foreground leading-tight truncate">
+                  Janamaitri Multiple Campus
+                </p>
+                <p className="text-xs sm:text-sm text-muted-foreground leading-tight truncate">
+                  Department of ICT, Student Record
+                </p>
+              </div>
             </div>
-            <div className="text-center min-w-0">
-              <p className="text-sm sm:text-base font-semibold text-foreground leading-tight truncate">
-                Janamaitri Multiple Campus
-              </p>
-              <p className="text-xs sm:text-sm text-muted-foreground leading-tight truncate">
-                Department of ICT, Student Record
-              </p>
-            </div>
-            
-            <div className="flex items-center justify-center sm:justify-end gap-2 sm:gap-4 flex-wrap">
+
+            <div className="flex items-center gap-2 overflow-x-auto pb-1 sm:overflow-visible sm:pb-0 sm:justify-end">
               <Button
                 size="sm"
                 onClick={() => navigateTo({ page: 'add-student' })}
-                className="bg-primary hover:bg-primary/90"
+                className="bg-primary hover:bg-primary/90 whitespace-nowrap"
               >
                 <Plus className="w-4 h-4 sm:mr-2" />
                 <span className="hidden sm:inline">Add Student</span>
@@ -141,8 +144,17 @@ export function DashboardPage() {
               <Button
                 variant="ghost"
                 size="sm"
+                onClick={() => navigateTo({ page: 'subject-setup' })}
+                className="text-muted-foreground hover:text-primary whitespace-nowrap"
+              >
+                <BookOpen className="w-4 h-4 sm:mr-2" />
+                <span className="hidden sm:inline">Subject Setup</span>
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
                 onClick={() => navigateTo({ page: 'students' })}
-                className="text-muted-foreground hover:text-primary"
+                className="text-muted-foreground hover:text-primary whitespace-nowrap"
               >
                 <Users className="w-4 h-4 sm:mr-2" />
                 <span className="hidden sm:inline">Students</span>
@@ -151,7 +163,7 @@ export function DashboardPage() {
                 variant="ghost"
                 size="sm"
                 onClick={handleLogout}
-                className="text-muted-foreground hover:text-red-600"
+                className="text-muted-foreground hover:text-red-600 whitespace-nowrap"
               >
                 <LogOut className="w-4 h-4 sm:mr-2" />
                 <span className="hidden sm:inline">Logout</span>
@@ -171,40 +183,39 @@ export function DashboardPage() {
           </p>
         </div>
 
-        {/* Stats Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        {/* Summary Stats */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
           <StatCard
             title="Total Students"
             value={stats?.total_students || 0}
             icon={Users}
             description="Active enrolled students"
             color="#2563eb"
-            isLoading={isLoading}
+            isLoading={isDashboardLoading}
           />
           <StatCard
-            title="BCA Students"
-            value={stats?.total_bca_students || 0}
+            title="Total Programs"
+            value={programOptions.length}
             icon={GraduationCap}
-            description="Bachelor of Computer Applications"
+            description="Programs configured in setup"
             color="#059669"
-            isLoading={isLoading}
+            isLoading={isDashboardLoading}
           />
-          <StatCard
-            title="BICTE Students"
-            value={stats?.total_bicte_students || 0}
-            icon={BookOpen}
-            description="Bachelor in ICT Education"
-            color="#7c3aed"
-            isLoading={isLoading}
-          />
-          <StatCard
-            title="Programs"
-            value="2"
-            icon={TrendingUp}
-            description="Active academic programs"
-            color="#dc2626"
-            isLoading={false}
-          />
+        </div>
+
+        {/* Program-wise Student Counts */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+          {programSummaryRows.map((program, index) => (
+            <StatCard
+              key={program.name}
+              title={`${program.name} Students`}
+              value={program.students}
+              icon={BookOpen}
+              description="Active students in this program"
+              color={COLORS[index % COLORS.length]}
+              isLoading={isDashboardLoading}
+            />
+          ))}
         </div>
 
         {/* Charts Section */}
@@ -263,21 +274,21 @@ export function DashboardPage() {
             </CardHeader>
             <CardContent>
               <div className="h-64">
-                {isLoading ? (
+                {isDashboardLoading ? (
                   <Skeleton className="h-full w-full" />
                 ) : (
                   <ResponsiveContainer width="100%" height="100%">
                     <PieChart>
                       <Pie
-                        data={programData}
+                        data={programSummaryRows}
                         cx="50%"
                         cy="50%"
                         innerRadius={60}
                         outerRadius={80}
                         paddingAngle={5}
-                        dataKey="value"
+                        dataKey="students"
                       >
-                        {programData.map((_entry, index) => (
+                        {programSummaryRows.map((_entry, index) => (
                           <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                         ))}
                       </Pie>
@@ -293,14 +304,14 @@ export function DashboardPage() {
                 )}
               </div>
               <div className="flex justify-center gap-6 mt-4">
-                {programData.map((entry, index) => (
+                {programSummaryRows.map((entry, index) => (
                   <div key={entry.name} className="flex items-center gap-2">
                     <div 
                       className="w-3 h-3 rounded-full"
-                      style={{ backgroundColor: COLORS[index] }}
+                      style={{ backgroundColor: COLORS[index % COLORS.length] }}
                     />
                     <span className="text-sm text-muted-foreground">
-                      {entry.name}: {entry.value}
+                      {entry.name}: {entry.students}
                     </span>
                   </div>
                 ))}

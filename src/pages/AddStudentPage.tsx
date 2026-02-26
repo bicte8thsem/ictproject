@@ -8,7 +8,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { MAX_STUDENT_PHOTO_SIZE_BYTES, studentFormSchema } from '@/lib/validations';
 import { useAuth } from '@/contexts/AuthContext';
 import { navigateTo } from '@/lib/router';
-import { useCreateStudent } from '@/hooks/useApi';
+import { useCreateStudent, useProgramOptions } from '@/hooks/useApi';
 import { useAutoHideHeader } from '@/hooks/useAutoHideHeader';
 import { uploadStudentPhoto } from '@/lib/api';
 import { handleError } from '@/lib/supabase';
@@ -41,6 +41,7 @@ import { toast } from 'sonner';
 export function AddStudentPage() {
   const { logout } = useAuth();
   const createStudent = useCreateStudent();
+  const { data: programOptions = ['BCA', 'BICTE'] } = useProgramOptions();
   const isHeaderVisible = useAutoHideHeader();
   const [photoFile, setPhotoFile] = useState<File | null>(null);
   const [photoPreview, setPhotoPreview] = useState('');
@@ -50,6 +51,8 @@ export function AddStudentPage() {
     control,
     register,
     handleSubmit,
+    watch,
+    setValue,
     reset,
     formState: { errors, isSubmitting },
   } = useForm({
@@ -121,6 +124,14 @@ export function AddStudentPage() {
     const parsed = Number(value);
     return Number.isNaN(parsed) ? undefined : parsed;
   };
+
+  const selectedProgram = watch('program');
+
+  useEffect(() => {
+    if (!programOptions.includes(selectedProgram)) {
+      setValue('program', programOptions[0]);
+    }
+  }, [programOptions, selectedProgram, setValue]);
 
   const onSubmit = async (rawData: unknown) => {
     try {
@@ -363,8 +374,11 @@ export function AddStudentPage() {
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="BCA">BCA</SelectItem>
-                          <SelectItem value="BICTE">BICTE</SelectItem>
+                          {programOptions.map((programName) => (
+                            <SelectItem key={programName} value={programName}>
+                              {programName}
+                            </SelectItem>
+                          ))}
                         </SelectContent>
                       </Select>
                     )}
@@ -575,6 +589,7 @@ export function AddStudentPage() {
                     <Input 
                       id="slc_passed_year" 
                       type="number"
+                      step="1"
                       {...register('slc_passed_year', { setValueAs: optionalNumber })} 
                     />
                   </div>
@@ -587,7 +602,7 @@ export function AddStudentPage() {
                     <Input 
                       id="slc_gpa" 
                       type="number"
-                      step="0.01"
+                      step="any"
                       min="0"
                       max="4"
                       {...register('slc_gpa', { setValueAs: optionalNumber })} 
@@ -607,6 +622,7 @@ export function AddStudentPage() {
                     <Input 
                       id="hs_passed_year" 
                       type="number"
+                      step="1"
                       {...register('hs_passed_year', { setValueAs: optionalNumber })} 
                     />
                   </div>
@@ -619,7 +635,7 @@ export function AddStudentPage() {
                     <Input 
                       id="hs_gpa" 
                       type="number"
-                      step="0.01"
+                      step="any"
                       min="0"
                       max="4"
                       {...register('hs_gpa', { setValueAs: optionalNumber })} 
@@ -627,7 +643,11 @@ export function AddStudentPage() {
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="major_subject">Major Subject</Label>
-                    <Input id="major_subject" {...register('major_subject')} />
+                    <Input
+                      id="major_subject"
+                      {...register('major_subject')}
+                      placeholder="Enter major subject"
+                    />
                   </div>
                 </div>
               </div>

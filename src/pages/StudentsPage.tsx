@@ -5,7 +5,7 @@
 import { useEffect, useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { navigateTo } from '@/lib/router';
-import { useStudents, useDeleteStudent } from '@/hooks/useApi';
+import { useProgramOptions, useStudents, useDeleteStudent } from '@/hooks/useApi';
 import { useAutoHideHeader } from '@/hooks/useAutoHideHeader';
 import logo from '../../logo.svg';
 import { Button } from '@/components/ui/button';
@@ -69,12 +69,6 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import type { ProgramType } from '@/types';
-
-const PROGRAM_OPTIONS: { value: ProgramType | 'all'; label: string }[] = [
-  { value: 'all', label: 'All Programs' },
-  { value: 'BCA', label: 'BCA' },
-  { value: 'BICTE', label: 'BICTE' },
-];
 
 const SEMESTER_OPTIONS = [
   { value: 'all', label: 'All Semesters' },
@@ -200,7 +194,13 @@ function StudentRow({
       <TableCell>
         <Button variant="outline" size="sm" onClick={openAcademicRecords}>
           <BookOpen className="w-4 h-4 mr-2" />
-          Add Academic
+          See Details
+        </Button>
+      </TableCell>
+      <TableCell>
+        <Button variant="outline" size="sm" onClick={openStudentProfile}>
+          <Eye className="w-4 h-4 mr-2" />
+          View Profile
         </Button>
       </TableCell>
       <TableCell onClick={(e) => e.stopPropagation()}>
@@ -246,6 +246,7 @@ function StudentRow({
 
 export function StudentsPage() {
   const { logout } = useAuth();
+  const { data: programOptions = ['BCA', 'BICTE'] } = useProgramOptions();
   const isHeaderVisible = useAutoHideHeader();
   const [searchQuery, setSearchQuery] = useState('');
   const [program, setProgram] = useState<ProgramType | 'all'>('all');
@@ -348,6 +349,15 @@ export function StudentsPage() {
                 <span className="hidden sm:inline">Add Student</span>
               </Button>
               <Button
+                variant="outline"
+                size="sm"
+                onClick={() => navigateTo({ page: 'subject-setup' })}
+                className="w-9 px-0 sm:w-auto sm:px-3"
+              >
+                <BookOpen className="w-4 h-4" />
+                <span className="hidden sm:inline">Subject Setup</span>
+              </Button>
+              <Button
                 variant="ghost"
                 size="sm"
                 onClick={handleLogout}
@@ -385,9 +395,10 @@ export function StudentsPage() {
                       <SelectValue placeholder="Program" />
                     </SelectTrigger>
                     <SelectContent>
-                      {PROGRAM_OPTIONS.map((opt) => (
-                        <SelectItem key={opt.value} value={opt.value}>
-                          {opt.label}
+                      <SelectItem value="all">All Programs</SelectItem>
+                      {programOptions.map((programName) => (
+                        <SelectItem key={programName} value={programName}>
+                          {programName}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -454,6 +465,7 @@ export function StudentsPage() {
                   <TableHead className="font-semibold text-foreground">Contact</TableHead>
                   <TableHead className="font-semibold text-foreground">Email</TableHead>
                   <TableHead className="font-semibold text-foreground">Academic</TableHead>
+                  <TableHead className="font-semibold text-foreground">Profile</TableHead>
                   <TableHead className="w-10"></TableHead>
                 </TableRow>
               </TableHeader>
@@ -468,12 +480,13 @@ export function StudentsPage() {
                       <TableCell><Skeleton className="h-6 w-24" /></TableCell>
                       <TableCell><Skeleton className="h-6 w-32" /></TableCell>
                       <TableCell><Skeleton className="h-8 w-28" /></TableCell>
+                      <TableCell><Skeleton className="h-8 w-28" /></TableCell>
                       <TableCell></TableCell>
                     </TableRow>
                   ))
                 ) : totalStudents === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={8} className="text-center py-12">
+                    <TableCell colSpan={9} className="text-center py-12">
                       <div className="flex flex-col items-center gap-3">
                         <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center">
                           <Search className="w-8 h-8 text-muted-foreground/70" />

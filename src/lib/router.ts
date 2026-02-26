@@ -4,6 +4,7 @@ import { isUuid, slugifyStudentName } from '@/lib/slug';
 export type Route =
   | { page: 'login' }
   | { page: 'dashboard' }
+  | { page: 'subject-setup' }
   | { page: 'students' }
   | { page: 'student-profile'; studentId: string; studentName?: string }
   | { page: 'student-academic-records'; studentId: string; studentName?: string }
@@ -35,6 +36,7 @@ function routeFromPath(rawPath: string): Route {
 
   if (path === '/login') return { page: 'login' };
   if (path === '/') return { page: 'dashboard' };
+  if (path === '/subjects/setup') return { page: 'subject-setup' };
   if (path === '/students') return { page: 'students' };
   if (path === '/students/add') return { page: 'add-student' };
   if (path.startsWith('/students/') && path.endsWith('/edit')) {
@@ -64,6 +66,8 @@ function getRoutePath(route: Route): string {
       return '/login';
     case 'dashboard':
       return '/';
+    case 'subject-setup':
+      return '/subjects/setup';
     case 'students':
       return '/students';
     case 'student-profile': {

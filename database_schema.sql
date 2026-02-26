@@ -41,6 +41,27 @@ $$;
 -- CORE TABLES
 -- ============================================
 
+-- 0. PROGRAMS TABLE (Admin-managed list of programs)
+CREATE TABLE IF NOT EXISTS programs (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    name VARCHAR(50) UNIQUE NOT NULL,
+    created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_programs_name ON programs(name);
+
+-- Backfill programs table from enum values (safe for fresh + existing databases)
+DO $$
+BEGIN
+    INSERT INTO programs (name)
+    SELECT e.enumlabel
+    FROM pg_enum e
+    JOIN pg_type t ON t.oid = e.enumtypid
+    WHERE t.typname = 'program_type'
+    ON CONFLICT (name) DO NOTHING;
+END
+$$;
+
 -- 1. STUDENTS TABLE (Main student record)
 CREATE TABLE IF NOT EXISTS students (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
@@ -140,6 +161,7 @@ CREATE TABLE IF NOT EXISTS subjects (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     code VARCHAR(20) NOT NULL,
     name VARCHAR(200) NOT NULL,
+    subject_team VARCHAR(150),
     program program_type NOT NULL,
     semester INTEGER NOT NULL CHECK (semester >= 1 AND semester <= 8),
     credit_hours INTEGER DEFAULT 3,
@@ -147,6 +169,8 @@ CREATE TABLE IF NOT EXISTS subjects (
     created_at TIMESTAMPTZ DEFAULT NOW(),
     UNIQUE(code, program, semester)
 );
+
+ALTER TABLE subjects ADD COLUMN IF NOT EXISTS subject_team VARCHAR(150);
 
 CREATE INDEX IF NOT EXISTS idx_subjects_program_semester ON subjects(program, semester);
 CREATE INDEX IF NOT EXISTS idx_subjects_code ON subjects(code);
@@ -235,6 +259,68 @@ CREATE INDEX IF NOT EXISTS idx_exam_records_subject_id ON exam_records(subject_i
 CREATE INDEX IF NOT EXISTS idx_exam_records_semester ON exam_records(semester);
 CREATE INDEX IF NOT EXISTS idx_exam_records_type ON exam_records(exam_type);
 
+-- Keep enum and programs table in sync by allowing admins to add enum values from app.
+CREATE OR REPLACE FUNCTION add_program_type(p_program_name TEXT)
+RETURNS TEXT
+LANGUAGE plpgsql
+SECURITY DEFINER
+AS $$
+DECLARE
+    v_program_name TEXT;
+BEGIN
+    v_program_name := UPPER(TRIM(p_program_name));
+
+    IF v_program_name IS NULL OR v_program_name = '' THEN
+        RAISE EXCEPTION 'Program name is required';
+    END IF;
+
+    -- Add enum value only if it does not exist already.
+    IF NOT EXISTS (
+        SELECT 1
+        FROM pg_enum e
+        JOIN pg_type t ON t.oid = e.enumtypid
+        WHERE t.typname = 'program_type'
+          AND e.enumlabel = v_program_name
+    ) THEN
+        EXECUTE format('ALTER TYPE program_type ADD VALUE %L', v_program_name);
+    END IF;
+
+    INSERT INTO programs (name)
+    VALUES (v_program_name)
+    ON CONFLICT (name) DO NOTHING;
+
+    RETURN v_program_name;
+END;
+$$;
+
+CREATE OR REPLACE FUNCTION delete_program_type(p_program_name TEXT)
+RETURNS BOOLEAN
+LANGUAGE plpgsql
+SECURITY DEFINER
+AS $$
+DECLARE
+    v_program_name TEXT;
+BEGIN
+    v_program_name := UPPER(TRIM(p_program_name));
+
+    IF v_program_name IS NULL OR v_program_name = '' THEN
+        RAISE EXCEPTION 'Program name is required';
+    END IF;
+
+    IF EXISTS (SELECT 1 FROM subjects WHERE program::TEXT = v_program_name) THEN
+        RAISE EXCEPTION 'Cannot delete program. Remove related subjects first.';
+    END IF;
+
+    IF EXISTS (SELECT 1 FROM students WHERE program::TEXT = v_program_name) THEN
+        RAISE EXCEPTION 'Cannot delete program. Students are still assigned to this program.';
+    END IF;
+
+    DELETE FROM programs WHERE name = v_program_name;
+
+    RETURN TRUE;
+END;
+$$;
+
 -- ============================================
 -- STORAGE SETUP (SUPABASE)
 -- ============================================
@@ -295,6 +381,9 @@ BEGIN
     END IF;
 END
 $$;
+
+INSERT INTO programs (name) VALUES ('BCA') ON CONFLICT (name) DO NOTHING;
+INSERT INTO programs (name) VALUES ('BICTE') ON CONFLICT (name) DO NOTHING;
 
 -- ============================================
 -- SEED DATA - BICTE SUBJECTS
@@ -507,6 +596,7 @@ ALTER TABLE students ENABLE ROW LEVEL SECURITY;
 ALTER TABLE student_addresses ENABLE ROW LEVEL SECURITY;
 ALTER TABLE parent_details ENABLE ROW LEVEL SECURITY;
 ALTER TABLE academic_history ENABLE ROW LEVEL SECURITY;
+ALTER TABLE programs ENABLE ROW LEVEL SECURITY;
 ALTER TABLE subjects ENABLE ROW LEVEL SECURITY;
 ALTER TABLE student_semesters ENABLE ROW LEVEL SECURITY;
 ALTER TABLE assignment_records ENABLE ROW LEVEL SECURITY;
@@ -534,6 +624,12 @@ CREATE POLICY admin_all_access ON parent_details
 
 DROP POLICY IF EXISTS admin_all_access ON academic_history;
 CREATE POLICY admin_all_access ON academic_history
+    FOR ALL TO authenticated
+    USING (true)
+    WITH CHECK (true);
+
+DROP POLICY IF EXISTS admin_all_access ON programs;
+CREATE POLICY admin_all_access ON programs
     FOR ALL TO authenticated
     USING (true)
     WITH CHECK (true);
@@ -573,6 +669,14 @@ DROP POLICY IF EXISTS anonymous_read_subjects ON subjects;
 CREATE POLICY anonymous_read_subjects ON subjects
     FOR SELECT TO anon
     USING (true);
+
+DROP POLICY IF EXISTS anonymous_read_programs ON programs;
+CREATE POLICY anonymous_read_programs ON programs
+    FOR SELECT TO anon
+    USING (true);
+
+GRANT EXECUTE ON FUNCTION add_program_type(TEXT) TO authenticated;
+GRANT EXECUTE ON FUNCTION delete_program_type(TEXT) TO authenticated;
 
 -- ============================================
 -- VIEWS FOR REPORTING

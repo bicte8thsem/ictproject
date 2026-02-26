@@ -10,7 +10,10 @@ export const MAX_STUDENT_PHOTO_SIZE_BYTES = 2 * 1024 * 1024; // 2MB
 // ENUM VALIDATIONS
 // ============================================
 
-export const programTypeSchema = z.enum(['BCA', 'BICTE']);
+export const programTypeSchema = z.string()
+  .trim()
+  .min(1, 'Program is required')
+  .max(50, 'Maximum 50 characters allowed');
 export const genderTypeSchema = z.enum(['Male', 'Female', 'Other']);
 export const levelTypeSchema = z.enum(['Bachelor', 'Master']);
 export const examTypeSchema = z.enum(['Mid-Session', 'PreBoard']);
@@ -206,7 +209,7 @@ export type LoginSchema = z.infer<typeof loginSchema>;
 
 export const studentSearchSchema = z.object({
   searchQuery: z.string().max(100).optional(),
-  program: z.enum(['BCA', 'BICTE', 'all']).optional().default('all'),
+  program: z.union([z.string().min(1), z.literal('all')]).optional().default('all'),
   semester: z.union([z.number().int().min(1).max(8), z.literal('all')]).optional().default('all'),
   status: z.enum(['Active', 'Inactive', 'Graduated', 'Dropped', 'all']).optional().default('all'),
 });

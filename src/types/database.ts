@@ -29,7 +29,7 @@ export interface Database {
           email_id: string | null;
           residential_no: string | null;
           photo_url: string | null;
-          program: 'BCA' | 'BICTE';
+          program: string;
           current_semester: number;
           status: string;
           created_at: string | null;
@@ -50,7 +50,7 @@ export interface Database {
           email_id?: string | null;
           residential_no?: string | null;
           photo_url?: string | null;
-          program: 'BCA' | 'BICTE';
+          program: string;
           current_semester?: number;
           status?: string;
           created_at?: string | null;
@@ -71,7 +71,7 @@ export interface Database {
           email_id?: string | null;
           residential_no?: string | null;
           photo_url?: string | null;
-          program?: 'BCA' | 'BICTE';
+          program?: string;
           current_semester?: number;
           status?: string;
           created_at?: string | null;
@@ -212,7 +212,8 @@ export interface Database {
           id: string;
           code: string;
           name: string;
-          program: 'BCA' | 'BICTE';
+          subject_team: string | null;
+          program: string;
           semester: number;
           credit_hours: number | null;
           is_elective: boolean | null;
@@ -222,7 +223,8 @@ export interface Database {
           id?: string;
           code: string;
           name: string;
-          program: 'BCA' | 'BICTE';
+          subject_team?: string | null;
+          program: string;
           semester: number;
           credit_hours?: number | null;
           is_elective?: boolean | null;
@@ -232,7 +234,8 @@ export interface Database {
           id?: string;
           code?: string;
           name?: string;
-          program?: 'BCA' | 'BICTE';
+          subject_team?: string | null;
+          program?: string;
           semester?: number;
           credit_hours?: number | null;
           is_elective?: boolean | null;
@@ -453,7 +456,7 @@ export interface Database {
       };
     };
     Enums: {
-      program_type: 'BCA' | 'BICTE';
+      program_type: string;
       gender_type: 'Male' | 'Female' | 'Other';
       level_type: 'Bachelor' | 'Master';
     };
