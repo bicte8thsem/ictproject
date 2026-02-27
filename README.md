@@ -1,6 +1,6 @@
 # Academic Management System (React + Supabase)
 
-This app uses Supabase for authentication and data APIs.
+A modern Academic Management System built with React (Vite) and powered by Supabase for authentication and database APIs.
 
 ## 1. Configure Supabase
 
