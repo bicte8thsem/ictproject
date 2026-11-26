@@ -171,7 +171,7 @@ function Router() {
         {route.page === "edit-student" && (
           <EditStudentPage studentId={route.studentId} />
         )}
-        <BuiltByFooter />
+        {route.page !== "login" && <BuiltByFooter />}
       </>
     </Suspense>
   );

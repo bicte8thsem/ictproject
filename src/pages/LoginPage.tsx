@@ -13,6 +13,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { BuiltByFooter } from '@/components/BuiltByFooter';
 import { Loader2, Eye, EyeOff } from 'lucide-react';
 import logo from '../../logo.svg';
 
@@ -82,12 +83,12 @@ export function LoginPage() {
           <img src={logo} alt="Logo" className="h-[104px] w-auto" />
         </div>
 
-        <Card className="bg-card">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-center">Enter Details For Login</CardTitle>
+        <Card className="bg-card gap-0">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-center text-xl">Sign In</CardTitle>
           </CardHeader>
 
-          <CardContent>
+          <CardContent className="pt-0">
             {error && (
               <Alert variant="destructive" className="mb-4">
                 <AlertDescription>{error}</AlertDescription>
@@ -152,6 +153,9 @@ export function LoginPage() {
           </CardContent>
         </Card>
 
+        <div className="mt-2">
+          <BuiltByFooter />
+        </div>
       </div>
     </div>
   );
