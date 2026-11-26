@@ -1,0 +1,47 @@
+# Dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# Test / coverage output
+coverage/
+
+# Build output
+dist/
+dist-ssr/
+build/
+*.local
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# Environment variables (keep the example tracked)
+.env
+.env.*
+!.env.example
+
+# Deployment / tooling caches
+.vercel/
+.netlify/
+.turbo/
+.cache/
+.eslintcache
+*.tsbuildinfo
+
+# Editors / OS files
+.vscode/*
+!.vscode/extensions.json
+.idea/
+.DS_Store
+Thumbs.db
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?

@@ -3,7 +3,7 @@
 ## 1. Prerequisites
 - Supabase project is created.
 - Vercel project is connected to this repository.
-- Database schema in `database_schema.sql` has been reviewed and approved.
+- Database schema in `db/schema.sql` has been reviewed and approved.
 
 ## 2. Environment Variables
 Set these in Vercel Project Settings -> Environment Variables:
@@ -15,7 +15,7 @@ Do **not** expose service role secrets in frontend runtime.
 
 ## 3. Database Apply Order
 1. Open Supabase SQL editor.
-2. Run `database_schema.sql` in full on a staging database.
+2. Run `db/schema.sql` in full on a staging database.
 3. Validate these objects exist:
 - `programs`, `subjects`, `students` tables
 - `save_complete_student`, `get_student_profile`, `get_semester_records` functions
